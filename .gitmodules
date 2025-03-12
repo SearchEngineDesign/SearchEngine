@@ -1,6 +1,0 @@
-[submodule "Crawler"]
-	path = Crawler
-	url = git@github.com:SearchEngineDesign/Crawler.git
-[submodule "parser"]
-	path = parser
-	url = git@github.com:SearchEngineDesign/parser.git
