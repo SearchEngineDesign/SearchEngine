@@ -1,6 +1,7 @@
 // vector.h
 // 
 // Starter file for a vector template
+#pragma once
 #include <utility>
 #include <initializer_list>
 #include <iostream>
@@ -44,10 +45,8 @@ template<typename T>
                vecSize = num_elements;
                vecCapacity = num_elements;  
                arr = new T[vecCapacity];   
-               for ( size_t i = 0; i < num_elements; i++ )
-               {
+               for ( size_t i = 0; i < num_elements; i++ ) 
                   arr[ i ] = T( );
-               }
             }
          }
 
@@ -58,9 +57,7 @@ template<typename T>
       vector( size_t num_elements, const T &val )
          {
             if (num_elements == 0)
-            {
-               reset();
-            }
+            reset();
             else
             {
                vecSize = num_elements;
@@ -70,9 +67,7 @@ template<typename T>
                   {
                      arr = new T[ num_elements ];
                      for ( size_t i = 0; i < num_elements; i++ )
-                        {
-                           arr[ i ] = val;
-                        }
+                        arr[ i ] = val;
                   }
             }
          }
@@ -90,9 +85,7 @@ template<typename T>
                {
                   arr = new T[ vecCapacity ];
                   for ( size_t i = 0; i < vecSize; i++ )
-                     {
-                        arr[ i ] = other.arr[ i ];
-                     }
+                     arr[ i ] = other.arr[ i ];
                }
          }
 
@@ -112,9 +105,7 @@ template<typename T>
                      {
                         arr = new T[ vecCapacity ];
                         for ( size_t i = 0; i < vecSize; i++ )
-                           {
-                              arr[ i ] = other.arr[ i ];
-                           }
+                           arr[ i ] = other.arr[ i ];
                      }
                }
             return *this;
@@ -212,7 +203,7 @@ template<typename T>
       // MODIFIES: this, size( ), capacity( )
       // EFFECTS: Appends the element x to the vector, allocating
       //    additional space if neccesary
-      void pushBack( const T &x )
+      void push_back( const T &x )
          {
             if (this->vecSize == this->vecCapacity) {
                if ( this->vecCapacity != 0 )
@@ -274,6 +265,47 @@ template<typename T>
       const T* end( ) const
          {
             return arr + vecSize;
+         }
+      
+      T& back() const
+         {
+            if (vecSize == 0)
+               throw std::runtime_error("back on empty vector");
+            return arr[vecSize - 1];
+         }
+      
+      T& front() const
+         {
+            if (vecSize == 0)
+               throw std::runtime_error("front on empty vector");
+            return arr[0];
+         }
+      
+      bool empty() const
+         {
+            return vecSize == 0;
+         }
+      
+      void clear()
+         {
+            delete[] arr;  
+            vecSize = 0;
+            vecCapacity = 0;
+            arr = nullptr;
+         }
+
+      template<typename... Args>
+      void emplace_back(Args&&... args) 
+         {
+         if ( this->vecSize >= this->vecCapacity ) 
+            {
+            if ( this->vecCapacity == 0 ) 
+               reserve( this->vecCapacity + 1 );
+            else 
+               reserve( this->vecCapacity * 2 );
+            }
+         new(this->arr + this->vecSize) T( std::forward<Args>(args)... );
+         this->vecSize++;
          }
 
    private:
