@@ -1,15 +1,13 @@
 #pragma once
-// #include "utils/string.h"
-// #include <string>
-#include "utils/string.h"
 
-using utils::string;
+#include "string.h"
+
 class ParsedUrl {
     public:
-        utils::string urlName;
-        utils::string Service, Host, Port, Path, Domain;
+        string urlName;
+        string Service, Host, Port, Path, Domain;
     
-        ParsedUrl(const utils::string& url) {
+        ParsedUrl(const string& url) {
             urlName = url;
     
             size_t pos = 0;

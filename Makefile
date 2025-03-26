@@ -7,7 +7,7 @@ LDFLAGS = -L$(OPENSSL_DIR)/lib
 
 all: search #LinuxGetUrl
 
-search: main.cpp parser/HtmlParser.cpp parser/HtmlTags.cpp crawler/crawler.cpp utils/include/string.cpp index/index.cpp 
+search: main.cpp parser/HtmlParser.cpp parser/HtmlTags.cpp crawler/crawler.cpp utils/string.cpp index/index.cpp 
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ $(LDFLAGS) -lssl -lcrypto -lz -o crawlParse -g
 
 

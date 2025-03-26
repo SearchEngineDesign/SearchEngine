@@ -1,12 +1,13 @@
-#include "Crawler/crawler.h"
+#include "crawler/crawler.h"
 #include "parser/HtmlParser.h"
+
 #include <pthread.h>
-#include "utils/include/vector.h"
-#include "frontier/frontier.h"
 #include "index/index.h"
 
-#include "utils/include/string.h"
+#include "utils/string.h"
 #include "utils/ThreadSafeQueue.h"
+#include "utils/vector.h"
+#include "utils/ParsedUrl.h"
 
 #include "frontier/frontier.h"
 
