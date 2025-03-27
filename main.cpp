@@ -21,6 +21,8 @@ static const int NUM_OBJECTS = 1000000; // estimated number of objects for bloom
 
 static const int DEFAULT_PAGE_SIZE = 200000;
 
+Crawler crawler;
+
 struct crawlerResults {
     ParsedUrl url;
     vector<char> buffer;
@@ -49,7 +51,7 @@ void crawlUrl(void *arg) {
     vector<char> buffer(DEFAULT_PAGE_SIZE);
     size_t pageSize;
 
-    crawl(url, buffer.data(), pageSize);
+    crawler.crawl(url, buffer.data(), pageSize);
  
     crawlerResults cResult(url, buffer, pageSize);
     crawlResultsQueue.put(cResult);
@@ -103,19 +105,13 @@ int main() {
 
     ThreadPool threadPool(NUM_CRAWL_THREADS);
 
-    
-    
-    
     string url = "https://www.google.com";
-    // char buffer[MAX_PAGE_SIZE]; //don't use a buffer! write to a mapped file or other data structure
-    // size_t pageSize;
-    // ParsedUrl purl(url);
     
     frontier.insert(url);
     
     
     // will run crawlURL and parseFunc 10 times each
-    // will probably want to have them in a different thread pool`
+    // will probably want to have them in a different thread pool
     for (size_t i = 0; i < 10; i++)
     {
         threadPool.submit(crawlUrl, (void*) nullptr);
