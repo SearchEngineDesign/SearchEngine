@@ -37,10 +37,6 @@ void handle_signal(int signal) {
     }
 }
 
-
-
-
-
 struct crawlerResults {
     ParsedUrl url;
     vector<char> buffer;
@@ -124,7 +120,7 @@ void crawlUrl(void *arg) {
     while (keep_running) {
         ParsedUrl url = ParsedUrl(frontier.getNextURLorWait());
     
-        crawlRobots(url.makeRobots(), url.Service + string("://") + url.Host);
+        //crawlRobots(url.makeRobots(), url.Service + string("://") + url.Host);
     
         auto buffer = std::make_unique<char[]>(BUFFER_SIZE);
     
@@ -202,10 +198,13 @@ int main(int argc, char * argv[]) {
             return 1;
         }
     }
-
-
     
-
+    // setup sigpipe handler
+    struct sigaction sa;
+    sa.sa_handler = SIG_IGN;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+    sigaction(SIGPIPE, &sa, nullptr);
 
 
     for (size_t i = 0; i < NUM_CRAWL_THREADS; i++)
