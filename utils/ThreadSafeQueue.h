@@ -45,6 +45,12 @@ class ThreadSafeQueue {
             return isEmpty;
         }
 
+        void emptyQueue() {
+            pthread_mutex_lock(&mutex);
+            std::queue<T>().swap(queue); // Clear the queue
+            pthread_mutex_unlock(&mutex);
+        }
+
         ~ThreadSafeQueue() {
             pthread_mutex_destroy(&mutex);
             pthread_cond_destroy(&cond);

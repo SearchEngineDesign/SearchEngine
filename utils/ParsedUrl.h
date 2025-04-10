@@ -13,6 +13,10 @@ class ParsedUrl {
         ParsedUrl(const string& url) {
             urlName = url;
     
+            if (url.empty()) {
+                return;
+            }
+
             size_t pos = 0;
             const char *colon = ":";
             const char *slash = "/";
