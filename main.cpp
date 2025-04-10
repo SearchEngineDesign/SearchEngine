@@ -236,6 +236,13 @@ int main(int argc, char * argv[]) {
 
     signal(SIGINT, handle_signal); // Register the signal handler for SIGINT
 
+    
+    // setup sigpipe handler
+    struct sigaction sa;
+    sa.sa_handler = SIG_IGN;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+    sigaction(SIGPIPE, &sa, nullptr);
 
 
     for (size_t i = 0; i < NUM_CRAWL_THREADS; i++)

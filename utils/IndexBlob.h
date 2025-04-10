@@ -409,65 +409,203 @@ class IndexBlob
          }
    };
 
+/// URL BLOB STARTS HERE ///
 
-
-class HashFile
+struct SerialUrlTuple
    {
-   private:
-
-      int fd;
-      IndexBlob *blob;
-      struct stat fileInfo;
-
-      size_t FileSize( int f )
-         {
-         fstat( f, &fileInfo );
-         return fileInfo.st_size;
-         }
 
    public:
 
-      const IndexBlob *Blob( )
+      // Total size, starting point of value
+      size_t size, valueOffset;
+
+      // Calculate the bytes required to encode a HashBucket as a
+      // SerialUrlTuple.
+
+      static size_t BytesRequired( const Bucket<string, int> *b )
          {
+            size_t size = 0;
+
+            // size_t size, valueOffset
+            size += sizeof(size_t) << 1;
+
+            // string key
+            size += SerialString::BytesRequired(b->tuple.key);
+
+            size = RoundUp(size, sizeof(size_t));
+
+            // int value
+            size += sizeof(int);
+            
+            return RoundUp(size, sizeof(size_t));
+         }
+
+      // Write the HashBucket out as a SerialUrlTuple in the buffer,
+      // returning a pointer to one past the last character written.
+
+      static char *Write( char *buffer, size_t len,
+            const Bucket<string, int> *b )
+         {
+         SerialUrlTuple* t = reinterpret_cast<SerialUrlTuple*>(buffer);
+         size_t keySize = SerialString::BytesRequired(b->tuple.key);
+         size_t offset = sizeof(size_t) << 1;
+
+         // writing the key (string)
+         SerialString::Write(buffer + offset, &b->tuple.key);
+         offset += keySize;
+         offset = RoundUp(offset, sizeof(size_t));
+         t->valueOffset = offset;
+         
+         // writing the value (int)
+         memcpy(buffer + offset, &(b->tuple.value), sizeof(int));
+         offset += sizeof(int);
+         offset = RoundUp(offset, sizeof(size_t));
+
+         // finally, write the size
+         t->size = offset;
+
+         }
+
+      const size_t getSize() {
+         return size;
+      }
+
+      const SerialString* Key() const {
+         return reinterpret_cast<SerialString*>((char *)this + (sizeof(size_t) << 1));
+      }
+
+      const int Value() const {
+         return *(reinterpret_cast<int*>((char *)this + valueOffset));
+      }
+  };
+
+class UrlBlob
+   {
+
+   public:
+
+      size_t 
+         BlobSize, // size of blob
+         keyCount, 
+         chunkID,
+         NumberOfBuckets; 
+
+      size_t offsets[ Unknown ]; // arr of byte offsets to documents and buckets
+
+
+      // Returns the bucket in dict with token == key.
+      // If there is no matching key, returns null.
+      const SerialUrlTuple *Find( const char *key ) const
+         {
+         // Search for the key k and return a pointer to the
+         // ( key, value ) entry.  If the key is not found,
+         // return nullptr.
+
+         size_t i = Hash::hashbasic(key, NumberOfBuckets);
+         size_t bucketStart = offsets[i];
+         SerialUrlTuple *curr = reinterpret_cast<SerialUrlTuple*>((char *)this + bucketStart);
+
+         size_t bucketEnd;
+         (i == NumberOfBuckets - 1) ? bucketEnd = BlobSize : bucketEnd = offsets[i+1];
+
+         while (bucketStart < bucketEnd)
+         {
+            if (!strcmp(curr->Key()->c_str(), key))
+            {
+               return curr;
+            } else {
+               bucketStart += curr->getSize();
+               curr = reinterpret_cast<SerialUrlTuple*>((char *)this + bucketStart);
+            }
+            
+         }
+
+         return nullptr; 
+         }
+
+      static size_t BytesRequired( const HashTable<string, int> &hashTable )
+         {
+         // Calculate how much space it will take to
+         // represent a HashTable as a UrlBlob.
+
+         size_t bucketSpace = 0;
+         for (int i = 0; i < hashTable.size(); i++)
+            {
+               Bucket<string, int> *curr = hashTable.at(i);
+               while (curr != nullptr)
+               {
+                  // add the size of a bucket
+                  bucketSpace += SerialUrlTuple::BytesRequired(curr);
+                  curr = curr->next;
+               }
+            }
+
+         return bucketSpace;
+         }
+
+
+      // Create allocates memory for a UrlBlob of required size
+      // and then converts the HashTable into a IndexBlob.
+      // Caller is responsible for discarding when done.
+
+      static UrlBlob *Create( Index *index, size_t chunkID )
+         {
+         const vector<string> *documents = index->getDocuments();
+         HashTable<string, int> temp;
+
+         for (int i = 0; i < documents->size(); i++)
+            temp.Find(documents->operator[](i), i);
+
+         size_t offset = 0;
+         // space for the 4 blob size_t members
+         size_t size = sizeof(size_t) << 2;
+         // space to store the bucket offset array
+         size += temp.size() * sizeof(size_t);
+
+         // set offset as the starting point for writing
+         offset = size;
+
+         // space for the dict
+         size += UrlBlob::BytesRequired( temp );
+         
+         // allocating memory
+         char *mem = new char[size];
+         UrlBlob* blob = reinterpret_cast<UrlBlob*>(mem);
+
+         // assigning mvs
+         blob->BlobSize = size;
+         blob->keyCount = temp.getKeyCount();
+         blob->chunkID = chunkID;
+         blob->NumberOfBuckets = temp.size();
+
+         for (int i = 0; i < temp.size(); i++)
+         {
+            blob->offsets[i] = offset;
+            Bucket<string, int> *curr = temp.at(i);
+            
+            // writing the buckets
+            while (curr != nullptr) {
+               size_t tSize = SerialUrlTuple::BytesRequired(curr);
+               SerialUrlTuple::Write(mem + offset, tSize, curr);
+               offset += tSize;
+               offset = RoundUp(offset, sizeof(size_t));
+               curr = curr->next;
+            }
+            
+         }
+                  
          return blob;
          }
 
-      HashFile( const char *filename )
+      // Discard
+
+      static void Discard( const UrlBlob*blob )
          {
-            // Open the file for reading, map it, check the header,
-            // and note the blob address.
-
-            // Your code here.
-            fd = open(filename, O_RDONLY); //open file
-            if (fd == -1) 
-               perror("open");
-
-            if (FileSize(fd) == -1) //get file size
-               perror("fstat");
-
-            blob = reinterpret_cast<IndexBlob*>(mmap(nullptr, fileInfo.st_size, 
-                                       PROT_READ, MAP_PRIVATE, fd, 0)); //map bytes to 'blob'
-            if (blob == MAP_FAILED)
-               perror("mmap");
-
-         }
-
-      HashFile( const char *filename, const Hash *hashtable )
-         {
-         // Open the file for write, map it, write
-         // the hashtable out as a IndexBlob, and note
-         // the blob address.
-
-         // Your code here.
-         }
-
-      ~HashFile( )
-         {
-            munmap(blob, fileInfo.st_size);  //not sure if this should happen here or earlier
-            close(fd);                       //not sure if this should happen here or earlier
+         delete blob;
          }
    };
 
-   
+
+
 
 #endif

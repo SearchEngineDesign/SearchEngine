@@ -515,6 +515,8 @@ class string
          return m_data;
       }
 
+      friend std::istream &operator>>( std::istream &is, string &s );
+
    private:
       size_t m_size;
       size_t m_capacity;
