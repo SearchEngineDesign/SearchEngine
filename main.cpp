@@ -15,7 +15,6 @@
 
 #include <csignal>
 
-#include <chrono>
 #include <atomic>
 
 static const float ERROR_RATE = 0.0001; // 0.01% error rate for bloom filter

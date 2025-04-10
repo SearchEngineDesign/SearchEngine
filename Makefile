@@ -8,7 +8,7 @@ ifeq ($(OS),Windows_NT)
 	LDFLAGS = -L/usr/lib -Lindex/stemmer/utf8proc
 else
 	OPENSSL_DIR = /opt/homebrew/opt/openssl@3
-	INCLUDES = -I$(OPENSSL_DIR)/include
+	INCLUDES = -I$(OPENSSL_DIR)/include 
 	LDFLAGS = -L$(OPENSSL_DIR)/lib -Lindex/stemmer/utf8proc
 endif
 
@@ -16,7 +16,7 @@ endif
 
 all: search
 
-search: main.cpp parser/HtmlParser.cpp parser/HtmlTags.cpp Crawler/crawler.cpp utils/string.cpp index/index.cpp frontier/frontier.cpp utils/Utf8.cpp
+search: runner.cpp parser/HtmlParser.cpp parser/HtmlTags.cpp Crawler/crawler.cpp utils/string.cpp index/index.cpp frontier/frontier.cpp utils/Utf8.cpp distrib/node.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ $(LDFLAGS) -lssl -lcrypto -lz -o search -g
 
 

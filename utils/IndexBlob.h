@@ -23,6 +23,7 @@
 #include "string.h"
 #include "vector.h"
 
+
 using Hash = HashTable< string, PostingList >;
 using Pair = Tuple< string, PostingList >;
 using HashBucket = Bucket< string, PostingList >;

@@ -1,15 +1,19 @@
 #pragma once
 
-#include "utils/vector.h"
-#include "frontier/BloomFilter.h"
-#include "frontier/frontier.h"
-#include "threading/ThreadPool.h"
-#include "utils/ThreadSafeQueue.h"
-#include "index/index.h"
-// #include 
+#include "../utils/vector.h"
+#include "../frontier/BloomFilter.h"
+#include "../frontier/frontier.h"
+#include "../threading/ThreadPool.h"
+#include "../utils/ThreadSafeQueue.h"
+#include "../index/index.h"
+#include "../Crawler/crawler.h"
 
 #include <optional>
+#include <atomic>
 
+#include <csignal>
+
+#include "URLForwarder.h"
 
 struct crawlerResults {
     ParsedUrl url;
@@ -41,31 +45,52 @@ class Node {
 
     unsigned int id;
     unsigned int numNodes;
-
-
-    ThreadSafeFrontier frontier;
-    ThreadSafeQueue<crawlerResults> crawlResultsQueue;
-    IndexWriteHandler indexHandler;
     
-    ThreadPool crawlPool;
-    ThreadPool parsePool;
-
-    vector<std::optional<Bloomfilter>> otherBloomFilters;
-
+    std::atomic<bool> keepRunning;
+    
+    ThreadSafeFrontier frontier;
+    IndexWriteHandler indexHandler;
+    ThreadPool tPool;
     Crawler alpacino; 
+    UrlForwarder urlForwarder;
+    
+    
+    
+    ThreadSafeQueue<crawlerResults> crawlResultsQueue;
 
+    void crawl();
+
+    void parse();
+
+    void crawlRobots(const ParsedUrl& robots, const string& base);
+
+
+    
     public:
     Node()=default;
-
-
+    
+    
     Node(const unsigned int id, const unsigned int numNodes);
-
-
-    void start(const string& seedlistPath) {
-        frontier.buildFrontier(seedlistPath.c_str());
-    }
+    
+    
+    void start(const string& seedlistPath);
 
     void shutdown(bool writeFrontier);
+    
+    
+    static void crawlEntry(void *arg) {
+        auto node = static_cast<Node*>(arg);
+        node->crawl();
+    }
+    
+    static void parseEntry(void *arg) {
+        auto node = static_cast<Node*>(arg);
+        node->parse();
+    }
+    
+    void indexWrite(HtmlParser &parser);
 
+
+    void handle_signal(int signal);
 
 };
