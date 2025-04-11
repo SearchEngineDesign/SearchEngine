@@ -1,8 +1,5 @@
 #include "URLReceiver.h"
 
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
 
 #include "../utils/string.h"
 
@@ -35,18 +32,19 @@ void UrlReceiver::stopListening() {
     listenFlag = false;
 }
 
-UrlReceiver::UrlReceiver(ThreadSafeFrontier *frontier, const int port = 8080, const int id): frontierPtr(frontier), port(port), id(id) {
+UrlReceiver::UrlReceiver(ThreadSafeFrontier *frontier, const int id, const int port = 8080, ): frontierPtr(frontier), id(id), port(port + id) {
     listenFlag = true;
 
     // start listener
-    pthread_create(&thread, nullptr, listenerEntry, this);
+    (&thread, nullptr, listenerEntry, this);
 }
 
 void UrlReceiver::listener() {
-
+    
 
     try {
         createServer();
+        std::cout << "URLReceiver started listening on port: " << port << std::endl; 
     } catch (const std::exception &e) {
         std::cerr << "Error creating server: " << e.what() << std::endl;
         throw;

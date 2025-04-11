@@ -11,14 +11,24 @@ void Node::handle_signal(int signal) {
 }
 
 Node::Node(const unsigned int id, const unsigned int numNodes): id(id), numNodes(numNodes), keepRunning(true),
+    urlReceivers(new UrlReceiver[numNodes]),
     frontier(NUM_OBJECTS, ERROR_RATE),
     indexHandler("./log/chunks"),
     tPool(NUM_CRAWL_THREADS + NUM_PARSER_THREADS),
     alpacino(),
-    urlForwarder(numNodes, id, NUM_OBJECTS, ERROR_RATE),
+    // urlForwarder(numNodes, id, NUM_OBJECTS, ERROR_RATE),
     crawlResultsQueue()
 {
 
+    for (size_t i = 0; i < numNodes; i++)
+    {
+        if(i == id) {
+            new (&urlReceivers[i]) UrlReceiver(&frontier, i);
+        } else {
+            // urlReceivers.push_back(nullptr);
+        }
+    }
+    
 }
 
 void Node::start(const string& seedlistPath) {
@@ -102,6 +112,8 @@ void Node::crawlRobots(const ParsedUrl& robots, const string& base) {
             const char * c = buffer.get();
             HtmlParser parser(c, pageSize, base);
             crawlerResults cResult(robots, buffer.get(), pageSize);
+
+
             for (const auto &goodlink : parser.bodyWords) {
                 frontier.insert(goodlink);
             }

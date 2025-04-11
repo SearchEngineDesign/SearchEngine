@@ -1,6 +1,6 @@
 
-#include "utils/ParsedUrl.h"
-#include "utils/string.h"
+#include "../../utils/ParsedUrl.h"
+#include "../utils/string.h"
 
 enum TopLevelDomains {
     COM,
@@ -14,9 +14,6 @@ enum TopLevelDomains {
 
 static float DOMAIN_WEIGHTS[DOMAIN_COUNT] = {1, 1, 1, 2, 2, 1};
 
-
-
-using string;
 
 
 class StaticRanker {
@@ -39,6 +36,7 @@ class StaticRanker {
         else if (tld == "edu") tldEnum = EDU;
         else if (tld == "gov") tldEnum = GOV;
         else if (tld == "io") tldEnum = IO;
+
         
         return DOMAIN_WEIGHTS[tldEnum] * domainWeight;
     }

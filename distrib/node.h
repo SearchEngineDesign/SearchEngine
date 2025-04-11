@@ -8,7 +8,9 @@
 #include "../index/index.h"
 #include "../Crawler/crawler.h"
 
-#include <optional>
+#include "URLForwarder.h"
+#include "URLReceiver.h"
+
 #include <atomic>
 
 #include <csignal>
@@ -35,7 +37,7 @@ struct crawlerResults {
 //  class for abstracting distributed node
 class Node {
 
-    private:
+    private:    
 
     static constexpr float ERROR_RATE = 0.0001; // 0.01% error rate for bloom filter
     static constexpr int NUM_OBJECTS = 1000000; // estimated number of objects for bloom filter
@@ -47,13 +49,14 @@ class Node {
     unsigned int numNodes;
     
     std::atomic<bool> keepRunning;
+    std::unique_ptr<UrlReceiver[]> urlReceivers;  
+
     
     ThreadSafeFrontier frontier;
     IndexWriteHandler indexHandler;
     
     Crawler alpacino; 
-    UrlForwarder urlForwarder;
-        
+
     ThreadSafeQueue<crawlerResults> crawlResultsQueue;
 
     ThreadPool tPool;

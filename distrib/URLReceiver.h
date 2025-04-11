@@ -2,17 +2,21 @@
 
 #include <atomic>
 #include <cstddef>
-#include "frontier.h"
+#include "../frontier/frontier.h"
 #include "pthread.h"
 
 #include <unistd.h>
+
+
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
 
 
 
 class UrlReceiver {
 
     private:
-    ThreadSafeFrontier *frontierPtr;
     int port;
     int id;
     pthread_t thread;
@@ -25,7 +29,7 @@ class UrlReceiver {
     socklen_t addrlen;
 
 
-    string UrlReceiver::parseUrls(char * buffer);
+    string parseUrls(char * buffer);
 
 
     static void * listenerEntry(void * arg) {
@@ -41,9 +45,10 @@ class UrlReceiver {
 
     public: 
 
+        UrlReceiver() = default;
 
-        UrlReceiver(ThreadSafeFrontier *frontier, const int port = 8080, const int id);
-        
+        UrlReceiver(ThreadSafeFrontier *frontier, const int id, const int port = 8080);
+
         ~UrlReceiver();
 
         void stopListening();
