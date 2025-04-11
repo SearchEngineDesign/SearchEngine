@@ -6,7 +6,7 @@ void Node::handle_signal(int signal) {
     if (signal == SIGINT) {
         std::cout << "\nInterrupt received. Shutting down gracefully..." << std::endl;
         shutdown(true); 
-        keepRunning= false;  // Set the flag to stop the program
+        keepRunning = false;  // Set the flag to stop the program
     }
 }
 
@@ -21,12 +21,10 @@ Node::Node(const unsigned int id, const unsigned int numNodes): id(id), numNodes
 
 }
 
-
 void Node::start(const string& seedlistPath) {
     std::cout << "Node " << id << " started." << std::endl;
 
     frontier.buildFrontier(seedlistPath.c_str());
-
     
     for (size_t i = 0; i < NUM_CRAWL_THREADS; i++)
     {
@@ -43,7 +41,7 @@ void Node::start(const string& seedlistPath) {
 }
 
 void Node::shutdown(bool writeFrontier) {
-    if (!keepRunning) {
+    if (keepRunning) {
         if (writeFrontier)  
             frontier.writeFrontier(1); 
         std::cout << "Shutdown complete." << std::endl;

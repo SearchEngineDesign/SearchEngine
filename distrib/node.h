@@ -40,8 +40,8 @@ class Node {
     static constexpr float ERROR_RATE = 0.0001; // 0.01% error rate for bloom filter
     static constexpr int NUM_OBJECTS = 1000000; // estimated number of objects for bloom filter
 
-    static constexpr int NUM_CRAWL_THREADS = 30;
-    static constexpr int NUM_PARSER_THREADS = 30;
+    static constexpr int NUM_CRAWL_THREADS = 256;
+    static constexpr int NUM_PARSER_THREADS = 256;
 
     unsigned int id;
     unsigned int numNodes;
