@@ -298,6 +298,13 @@ class string
             }
          }
 
+
+      inline void append( const string& other) {
+         for (size_t i = 0; i < other.size(); ++i) {
+            push_back(other[i]);
+         }
+      }
+
       // Equality Operator
       // REQUIRES: Nothing
       // MODIFIES: Nothing

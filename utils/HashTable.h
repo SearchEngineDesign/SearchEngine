@@ -76,14 +76,10 @@ template< typename Key, typename Value > class HashTable
    public:
       static size_t hashbasic(const char *c, const size_t &mod) 
          {
-            size_t i = 0;
-            
-            while(*c != '\0')
-            {
-               i += *c;
-               c++;
-            }
-            return i % mod;
+            int hash;
+            while (*c)
+               hash = (hash * 101) + *c++;
+            return hash % mod;
          }
       size_t getKeyCount() const
          {
