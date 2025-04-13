@@ -29,7 +29,16 @@ int main(int argc, char * argv[]) {
      
     instance = &node;
 
-    instance->start("./log/frontier/initlist");
+    string seedlist = "./log/frontier/initlist";
+    string bf = "./log/frontier/bloomfilter.bin";
+    if (argc > 2)
+        seedlist = argv[1];
+    if (argc == 3)
+        bf = argv[2];
+    if (argc > 4)
+        std::cerr << "Too many arguments. Format: ./search [path to seedlist] [path to bloomfilter]" << std::endl;
+
+    instance->start(seedlist.c_str(), bf.c_str());
     
 
 }

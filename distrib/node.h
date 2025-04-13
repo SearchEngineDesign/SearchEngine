@@ -76,7 +76,7 @@ class Node {
     Node(const unsigned int id, const unsigned int numNodes);
     
     
-    void start(const string& seedlistPath);
+    void start(const char * seedlistPath, const char * bfPath);
 
     void shutdown(bool writeFrontier);
     

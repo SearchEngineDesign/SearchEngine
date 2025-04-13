@@ -23,7 +23,7 @@ Node::Node(const unsigned int id, const unsigned int numNodes): id(id), numNodes
     for (size_t i = 0; i < numNodes; i++)
     {
         if(i == id) {
-            new (&urlReceivers[i]) UrlReceiver(&frontier, i);
+            new (&urlReceivers[i]) UrlReceiver(i, 8080);
         } else {
             // urlReceivers.push_back(nullptr);
         }
@@ -31,10 +31,14 @@ Node::Node(const unsigned int id, const unsigned int numNodes): id(id), numNodes
     
 }
 
-void Node::start(const string& seedlistPath) {
+void Node::start(const char * seedlistPath, const char * bfPath) {
     std::cout << "Node " << id << " started." << std::endl;
 
-    frontier.buildFrontier(seedlistPath.c_str());
+    if (frontier.buildFrontier(seedlistPath, bfPath) == 1) {
+        shutdown(false);
+        return;
+    }
+
     
     for (size_t i = 0; i < NUM_CRAWL_THREADS; i++)
     {
