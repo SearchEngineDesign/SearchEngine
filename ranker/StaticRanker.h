@@ -1,6 +1,7 @@
 
-#include "../../utils/ParsedUrl.h"
+#include "../utils/ParsedUrl.h"
 #include "../utils/string.h"
+#include <cmath>>
 
 enum TopLevelDomains {
     COM,
@@ -12,9 +13,7 @@ enum TopLevelDomains {
     DOMAIN_COUNT
 };
 
-static float DOMAIN_WEIGHTS[DOMAIN_COUNT] = {1, 1, 1, 2, 2, 1};
-
-
+static float DOMAIN_WEIGHTS[DOMAIN_COUNT] = {1, 2, 1, 3, 3, 1};
 
 class StaticRanker {
     
@@ -54,9 +53,17 @@ class StaticRanker {
         float rankScore = 0.0f;
         // rankScore += urlLengthWeight * url.urlName.length(); // Length of the URL
         rankScore += getTopLevelDomain(url); // Weight based on the top-level domain
+
+        rankScore -= (log(url.Path.charcount('/')) / 2);
+
+        rankScore -= log(url.urlName.length());
+
+        return rankScore;
     }
     
-    
+    bool operator() (string &url1, string &url2) {
+        return rank(ParsedUrl(url1)) > rank(ParsedUrl(url2));
+    }
 };
 
 
