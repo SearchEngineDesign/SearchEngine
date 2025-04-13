@@ -1,7 +1,7 @@
 
 #include "../utils/ParsedUrl.h"
 #include "../utils/string.h"
-#include <cmath>>
+#include <cmath>
 
 enum TopLevelDomains {
     COM,
@@ -61,12 +61,7 @@ class StaticRanker {
         return rankScore;
     }
     
-    bool operator() (string &url1, string &url2) {
-        return rank(ParsedUrl(url1)) > rank(ParsedUrl(url2));
+    bool operator() (const string &url1, const string &url2) {
+        return rank(ParsedUrl(url1)) < rank(ParsedUrl(url2));
     }
 };
-
-
-
-
-

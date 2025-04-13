@@ -2,6 +2,7 @@
 
 
 #include "../utils/string.h"
+#include "../frontier/frontier.h"
 
 string UrlReceiver::parseUrls(char * buffer) {
 
@@ -15,11 +16,14 @@ string UrlReceiver::parseUrls(char * buffer) {
     int pos = substring.find("\n");
 
     while (pos != -1) {
-        string url = substring.substr(0, pos);
+        const string& url = substring.substr(0, pos);        
+
+        // add url to frontier
         
-        frontierPtr->insert(url);
-        
-        
+        if (frontierPtr) {
+            frontierPtr->insert(url);
+        }
+
         substring = substring.substr(pos + 1);
         pos = substring.find("\n");
     }
@@ -32,11 +36,11 @@ void UrlReceiver::stopListening() {
     listenFlag = false;
 }
 
-UrlReceiver::UrlReceiver(ThreadSafeFrontier *frontier, const int id, const int port = 8080, ): frontierPtr(frontier), id(id), port(port + id) {
+UrlReceiver::UrlReceiver( const int id, const int port, ThreadSafeFrontier* frontierPtr) : id(id), port(port + id), frontierPtr(frontierPtr) {
     listenFlag = true;
 
     // start listener
-    (&thread, nullptr, listenerEntry, this);
+    // (&thread, nullptr, listenerEntry, this);
 }
 
 void UrlReceiver::listener() {

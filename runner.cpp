@@ -31,8 +31,9 @@ int main(int argc, char * argv[]) {
 
     string seedlist = "./log/frontier/initlist";
     string bf = "./log/frontier/bloomfilter.bin";
-    if (argc > 2)
+    if (argc > 1)
         seedlist = argv[1];
+    
     if (argc == 3)
         bf = argv[2];
     if (argc > 4)

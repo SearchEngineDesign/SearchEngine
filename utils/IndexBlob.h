@@ -63,7 +63,7 @@ struct SerialString
             return RoundUp(size, sizeof(size_t));
          }
 
-      static char *Write( char *buffer, const string *str ) {
+      static void *Write( char *buffer, const string *str ) {
             SerialString* t = reinterpret_cast<SerialString*>(buffer);
             for ( size_t i = 0; i < str->size(); i++ )
                t->data[i] = *(str->at(i));
@@ -134,7 +134,7 @@ struct SerialPostingList
          }
          
 
-      static char *Write( char *buffer, size_t len,
+      static void *Write( char *buffer, size_t len,
          const PostingList *p ) {
             size_t offset = 0;
             SerialPostingList* t = reinterpret_cast<SerialPostingList*>(buffer);
@@ -219,7 +219,7 @@ struct SerialTuple
       // Write the HashBucket out as a SerialTuple in the buffer,
       // returning a pointer to one past the last character written.
 
-      static char *Write( char *buffer, size_t len,
+      static void *Write( char *buffer, size_t len,
             const HashBucket *b )
          {
          SerialTuple* t = reinterpret_cast<SerialTuple*>(buffer);
@@ -440,7 +440,7 @@ struct SerialUrlTuple
       // Write the HashBucket out as a SerialUrlTuple in the buffer,
       // returning a pointer to one past the last character written.
 
-      static char *Write( char *buffer, size_t len,
+      static void *Write( char *buffer, size_t len,
             const Bucket<string, int> *b )
          {
          SerialUrlTuple* t = reinterpret_cast<SerialUrlTuple*>(buffer);

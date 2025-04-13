@@ -2,8 +2,8 @@
 
 #include <atomic>
 #include <cstddef>
-#include "../frontier/frontier.h"
 #include "pthread.h"
+#include <iostream>
 
 #include <unistd.h>
 
@@ -12,15 +12,21 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 
+#include "../utils/string.h"
 
+class ThreadSafeFrontier;
 
 class UrlReceiver {
 
     private:
     int port;
     int id;
+    ThreadSafeFrontier * frontierPtr;
+
+    
     pthread_t thread;
     std::atomic<bool> listenFlag;
+
 
     // --- networking variables
 
@@ -47,7 +53,7 @@ class UrlReceiver {
 
         UrlReceiver() = default;
 
-        UrlReceiver(ThreadSafeFrontier *frontier, const int id, const int port = 8080);
+        UrlReceiver( const int id, const int port, ThreadSafeFrontier* frontierPtr);
 
         ~UrlReceiver();
 

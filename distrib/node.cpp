@@ -1,7 +1,6 @@
 #include "node.h"
 
 
-
 void Node::handle_signal(int signal) {
     if (signal == SIGINT) {
         std::cout << "\nInterrupt received. Shutting down gracefully..." << std::endl;
@@ -11,23 +10,13 @@ void Node::handle_signal(int signal) {
 }
 
 Node::Node(const unsigned int id, const unsigned int numNodes): id(id), numNodes(numNodes), keepRunning(true),
-    urlReceivers(new UrlReceiver[numNodes]),
-    frontier(NUM_OBJECTS, ERROR_RATE),
+    frontier(numNodes, id),
     indexHandler("./log/chunks"),
     tPool(NUM_CRAWL_THREADS + NUM_PARSER_THREADS),
-    alpacino(),
-    // urlForwarder(numNodes, id, NUM_OBJECTS, ERROR_RATE),
     crawlResultsQueue()
 {
 
-    for (size_t i = 0; i < numNodes; i++)
-    {
-        if(i == id) {
-            new (&urlReceivers[i]) UrlReceiver(i, 8080);
-        } else {
-            // urlReceivers.push_back(nullptr);
-        }
-    }
+    
     
 }
 
@@ -66,11 +55,12 @@ void Node::shutdown(bool writeFrontier) {
 
 void Node::crawl() {
 
+    Crawler alpacino;
+
     while (keepRunning) {
         ParsedUrl url = ParsedUrl(frontier.getNextURLorWait());
     
 
-        //std::cout << "Started Crawling: " << url.urlName << std::endl;
 
         if (url.urlName.empty()){
             std::cout << "Crawl func exiting because URL was empty" << std::endl;
@@ -79,7 +69,7 @@ void Node::crawl() {
             break;
         }
 
-        crawlRobots(url.makeRobots(), url.Service + string("://") + url.Host);
+        crawlRobots(url.makeRobots(), url.Service + string("://") + url.Host, alpacino);
     
         auto buffer = std::make_unique<char[]>(BUFFER_SIZE);
     
@@ -92,7 +82,6 @@ void Node::crawl() {
             crawlerResults cResult(url, buffer.get(), pageSize);
             crawlResultsQueue.put(cResult);
             
-            //std::cout << "Crawled: " << url.urlName << std::endl;
 
         } catch (const std::runtime_error &e) {
             std::cerr << e.what() << std::endl;
@@ -103,7 +92,7 @@ void Node::crawl() {
 }
 
 
-void Node::crawlRobots(const ParsedUrl& robots, const string& base) {
+void Node::crawlRobots(const ParsedUrl& robots, const string& base, Crawler &alpacino) {
     if (!frontier.contains(robots.urlName)) {
 
         // use unique ptr
@@ -135,17 +124,18 @@ void Node::crawlRobots(const ParsedUrl& robots, const string& base) {
 
 
 void Node::indexWrite(HtmlParser &parser) {
+    int sz = indexHandler.index->DocumentsInIndex;
     switch (indexHandler.addDocument(parser)) {
         case -1:
             // whole frontier write
             std::cout << "Writing frontier and bloom filter out to file." << std::endl;
+            stat.report(sz);
             frontier.writeFrontier(1);
-            // reset the frontier from the file, pruning extraneous urls
-            frontier.reset();
             break;
         case 1:
             // mini frontier write -- int 5 denotes the random chance of writing a url to the file
             std::cout << "Writing truncated frontier out to file" << std::endl;
+            stat.report(sz);
             frontier.writeFrontier(5);
             break;
         default:
@@ -162,7 +152,6 @@ void Node::parse() {
     
         HtmlParser parser(cResult.buffer.data(), cResult.pageSize);
 
-        //std::cout << "Parsed: " << cResult.url.urlName << std::endl;
 
         for (const auto &link : parser.links) {
             frontier.insert(link.URL);

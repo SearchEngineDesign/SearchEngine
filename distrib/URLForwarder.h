@@ -42,6 +42,7 @@ class UrlForwarder {
             if (urlQueue.size() >= BATCH_SIZE) {
                 // send urlQueue to node id
                 // clear urlQueue
+                sendBatch(id);
                 urlQueues[id].clear();
             }
 
@@ -93,7 +94,7 @@ class UrlForwarder {
 
     UrlForwarder() = default;
 
-    UrlForwarder(size_t numNodes, size_t id, size_t NUM_OBJECTS, double ERROR_RATE) : numNodes(numNodes) {
+    UrlForwarder(size_t numNodes, size_t id) : numNodes(numNodes), selfId(id) {
         
         // init bloom filters
         otherBloomFilters.reserve(numNodes); 
@@ -103,7 +104,7 @@ class UrlForwarder {
                 otherBloomFilters.emplace_back(std::nullopt);
             } else {
                 // otherBloomFilters[i].emplace(NUM_OBJECTS, ERROR_RATE);
-                otherBloomFilters.emplace_back(Bloomfilter(NUM_OBJECTS, ERROR_RATE));
+                otherBloomFilters.emplace_back(Bloomfilter(true));
             }
         }
 
@@ -122,23 +123,29 @@ class UrlForwarder {
 
     }
 
-
-    void addUrl(const string& url) {
+    // TODO: add dist from seedlist
+    int addUrl(const string& url) {
         const unsigned int urlOwner = crypto.hashMod(url, numNodes);
 
         if (not otherBloomFilters[urlOwner].has_value()) {
-            return;
+            assert(urlOwner == selfId);
+            return urlOwner;
         }
 
-            
-        const auto otherHasValue = otherBloomFilters[urlOwner].value().contains(url);
+        
+        auto& bloomFilter = otherBloomFilters[urlOwner].value();
+
+        const auto otherHasValue = bloomFilter.contains(url);
 
         if (otherHasValue) {
-            return;
+            return -1;
         }
         
+
+        bloomFilter.insert(url);
+        queueSend(url, urlOwner);
         
-        //  
+        return urlOwner;
 
     }
 };

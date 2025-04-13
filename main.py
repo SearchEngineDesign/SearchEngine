@@ -1,33 +1,43 @@
 import os
 import subprocess
 from time import sleep
-import codecs
 import sys
 
+from google.cloud import storage
 
-# Retrieve Job-defined env vars
-TASK_INDEX = os.getenv("CLOUD_RUN_TASK_INDEX", 0)
-TASK_ATTEMPT = os.getenv("CLOUD_RUN_TASK_ATTEMPT", 0)
-# Retrieve User-defined env vars
-SLEEP_MS = os.getenv("SLEEP_MS", 0)
-FAIL_RATE = os.getenv("FAIL_RATE", 0)
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="$HOME/.config/gcloud/application_default_credentials.json"
 
+from oauth2client.service_account import ServiceAccountCredentials
 
 LOG_FILE = 'out'
 SLEEP_INTERVAL = 30
 MAX_CHUNKS = 100
 
-def opensp():
-    return subprocess.Popen(
+def upload_to_bucket(blob_name, path_to_file, bucket_name):
+    """ Upload data to a bucket"""
+     
+    # Explicitly use service account credentials by specifying the private key
+    # file.
+    storage_client = storage.Client.from_service_account_json(
+        'creds.json')
+
+    #print(buckets = list(storage_client.list_buckets())
+
+    bucket = storage_client.get_bucket(bucket_name)
+    blob = bucket.blob(blob_name)
+    blob.upload_from_filename(path_to_file)
+    
+    #returns a public url
+    return blob.public_url
+
+def run():
+    sys.stdout.reconfigure(encoding='utf-8')
+    result = subprocess.Popen(
         ['./search', "./log/frontier/list", "./log/frontier/bloomfilter.bin", ">", LOG_FILE], 
         stdout=subprocess.PIPE, 
         stderr=subprocess.PIPE, 
         text=True
     )
-
-def run():
-    sys.stdout.reconfigure(encoding='utf-8')
-    result = opensp()
 
     oldln = 0
     newln = 0
@@ -41,9 +51,15 @@ def run():
             sleep(SLEEP_INTERVAL)
             if result.poll() is None: # if subprocess hasn't shut down
                 result.kill()
-            result = opensp()
+            result = subprocess.Popen(
+                ['./search', "./log/frontier/list", "./log/frontier/bloomfilter.bin", ">", LOG_FILE], 
+                stdout=subprocess.PIPE, 
+                stderr=subprocess.PIPE, 
+                text=True
+            )
         elif newln > MAX_CHUNKS:
             print("Transferring chunks...")
+            upload_to_bucket()
         oldln = newln
 
 
