@@ -46,7 +46,7 @@ void Node::start(const char * seedlistPath, const char * bfPath) {
 void Node::shutdown(bool writeFrontier) {
     if (keepRunning) {
         if (writeFrontier)  
-            frontier.writeFrontier(1); 
+            frontier.writeFrontier(); 
         std::cout << "Shutdown complete." << std::endl;
     }
 }
@@ -129,14 +129,11 @@ void Node::indexWrite(HtmlParser &parser) {
         case -1:
             // whole frontier write
             std::cout << "Writing frontier and bloom filter out to file." << std::endl;
-            stat.report(sz);
-            frontier.writeFrontier(1);
+            //stat.report(sz);
+            frontier.writeFrontier();
             break;
         case 1:
-            // mini frontier write -- int 5 denotes the random chance of writing a url to the file
-            std::cout << "Writing truncated frontier out to file" << std::endl;
-            stat.report(sz);
-            frontier.writeFrontier(5);
+            //stat.report(sz);
             break;
         default:
             break;
