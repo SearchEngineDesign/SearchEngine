@@ -23,7 +23,7 @@ class ThreadSafeQueue {
         void put(const T& item) {
             pthread_mutex_lock(&mutex);
             queue.push(item);
-            pthread_cond_signal(&cond); // Notify one waiting thread
+            pthread_cond_broadcast(&cond); // Notify ALL(?) waiting thread
             pthread_mutex_unlock(&mutex);
         }
 
