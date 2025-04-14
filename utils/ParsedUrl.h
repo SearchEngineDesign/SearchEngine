@@ -41,10 +41,9 @@ class ParsedUrl {
 
 
                 int domainstart = Host.length() - 1;
-
-                while(Host[domainstart] != '.' && domainstart > 0) {
-                    domainstart--;
-                }
+                if (domainstart > 0) 
+                    while(Host[domainstart] != '.' && domainstart > 0)
+                        domainstart--;
 
                 Domain = Host.substr(domainstart + 1);
 

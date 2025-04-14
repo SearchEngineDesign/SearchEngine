@@ -124,12 +124,11 @@ void Node::crawlRobots(const ParsedUrl& robots, const string& base, Crawler &alp
 
 
 void Node::indexWrite(HtmlParser &parser) {
-    int sz = indexHandler.index->DocumentsInIndex;
     switch (indexHandler.addDocument(parser)) {
         case -1:
             // whole frontier write
             std::cout << "Writing frontier and bloom filter out to file." << std::endl;
-            //stat.report(sz);
+            stats.report(indexHandler.index->DocumentsInIndex, this);
             frontier.writeFrontier();
             break;
         case 1:

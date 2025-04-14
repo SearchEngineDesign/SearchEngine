@@ -55,6 +55,10 @@ class ThreadSafeQueue {
             pthread_mutex_destroy(&mutex);
             pthread_cond_destroy(&cond);
         }
+
+        uint32_t size() {
+            return queue.size();
+        }
 };
 
 

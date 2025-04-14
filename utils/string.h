@@ -58,16 +58,18 @@ class string
       // REQUIRES: Nothing
       // MODIFIES: *this
       // EFFECTS: Creates a string with length and equivalent contents to cstr
-      string( const char *cstr, size_t length )
+      string( const char *cstr, size_t length, const char *end )
          {
             if ( cstr )
             {
                m_size = length;
                m_capacity = m_size + 1;
                m_data = new char[ m_capacity ];
-               for ( size_t i = 0; i < m_size; ++i ) 
-               {
-                  m_data[ i ] = cstr[ i ];
+               int i = 0;
+               while (i < length && cstr != end ) {
+                  m_data[ i ] = *cstr;
+                  ++i;
+                  ++cstr;
                }
                *(m_data + m_size) = '\0';
             }
@@ -489,7 +491,7 @@ class string
          if (pos + count > m_size) {
             count = m_size - pos;
          }
-         return string(m_data + pos, count);
+         return string(m_data + pos, count, m_data + m_size);
       }
 
 
@@ -498,7 +500,7 @@ class string
          if (pos > m_size) {
             return string();
          }
-         return string(m_data + pos, m_size-pos);
+         return string(m_data + pos, m_size-pos, m_data + m_size);
       }
       // Overload the + operator
       // REQUIRES: Nothing
