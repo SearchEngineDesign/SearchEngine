@@ -72,6 +72,10 @@ class Node {
     
     Node(const unsigned int id, const unsigned int numNodes);
     
+
+    ~Node() {
+        tPool.shutdown();
+    }
     
     void start(const string& seedlistPath);
 

@@ -76,15 +76,16 @@ void Node::crawl() {
     
         try {
             alpacino.crawl(url, buffer.get(), pageSize);
-            crawlerResults cResult(url, buffer.get(), pageSize);
-            crawlResultsQueue.put(cResult);
             
-            std::cout << "Crawled: " << url.urlName << std::endl;
 
         } catch (const std::runtime_error &e) {
             std::cerr << e.what() << std::endl;
         }
         
+        crawlerResults cResult(url, buffer.get(), pageSize);
+        crawlResultsQueue.put(cResult);
+            
+        std::cout << "Crawled: " << url.urlName << std::endl;
     }
 
 }
