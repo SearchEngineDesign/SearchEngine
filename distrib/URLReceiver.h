@@ -2,21 +2,31 @@
 
 #include <atomic>
 #include <cstddef>
-#include "frontier.h"
 #include "pthread.h"
+#include <iostream>
 
 #include <unistd.h>
 
 
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
+
+#include "../utils/string.h"
+
+class ThreadSafeFrontier;
 
 class UrlReceiver {
 
     private:
-    ThreadSafeFrontier *frontierPtr;
     int port;
     int id;
+    ThreadSafeFrontier * frontierPtr;
+
+    
     pthread_t thread;
     std::atomic<bool> listenFlag;
+
 
     // --- networking variables
 
@@ -25,7 +35,7 @@ class UrlReceiver {
     socklen_t addrlen;
 
 
-    string UrlReceiver::parseUrls(char * buffer);
+    string parseUrls(char * buffer);
 
 
     static void * listenerEntry(void * arg) {
@@ -41,9 +51,10 @@ class UrlReceiver {
 
     public: 
 
+        UrlReceiver() = default;
 
-        UrlReceiver(ThreadSafeFrontier *frontier, const int port = 8080, const int id);
-        
+        UrlReceiver( const int id, const int port, ThreadSafeFrontier* frontierPtr);
+
         ~UrlReceiver();
 
         void stopListening();

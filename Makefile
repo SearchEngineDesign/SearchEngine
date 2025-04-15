@@ -16,8 +16,8 @@ endif
 
 all: search
 
-search: runner.cpp parser/HtmlParser.cpp parser/HtmlTags.cpp Crawler/crawler.cpp utils/string.cpp index/index.cpp frontier/frontier.cpp utils/Utf8.cpp distrib/node.cpp
-	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ $(LDFLAGS) -lssl -lcrypto -lz -o search -g
+search: runner.cpp parser/HtmlParser.cpp parser/HtmlTags.cpp Crawler/crawler.cpp utils/string.cpp index/index.cpp frontier/frontier.cpp utils/Utf8.cpp distrib/node.cpp distrib/URLReceiver.cpp index/stemmer/stemmer.cpp 
+	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ $(LDFLAGS) -lutf8proc -lssl -lcrypto -lz -o search -g
 
 
 .PHONY: clean

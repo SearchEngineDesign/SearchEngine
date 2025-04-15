@@ -4,7 +4,7 @@
 #include <openssl/sha.h>
 #include <utility>
 #include "../utils/string.h"
-
+#include <cassert>
 
 
 class Crypto {
@@ -19,11 +19,16 @@ class Crypto {
             
         }
 
-
-        std::pair<uint64_t, uint64_t> doubleHash(const string& datum) {
+        std::pair<uint64_t, uint64_t> doubleHash(const string &datum) {
          
             assert(datum.length() > 0);
-            
+
+            const EVP_MD* md = EVP_sha256();
+            if (!md) {
+                throw std::runtime_error("EVP_sha256 returned NULL");
+            }
+
+
             unsigned char hash_digest[EVP_MAX_MD_SIZE];
         
             EVP_DigestInit_ex(ctx, EVP_sha256(), nullptr);
@@ -43,6 +48,8 @@ class Crypto {
 
         size_t hashMod(const string& datum, size_t size) {
             unsigned char hash_digest[EVP_MAX_MD_SIZE];
+
+            
 
             EVP_DigestInit_ex(ctx, EVP_sha256(), nullptr);
             EVP_DigestUpdate(ctx, datum.c_str(), datum.length());

@@ -1,31 +1,32 @@
 #include "node.h"
 
 
-
 void Node::handle_signal(int signal) {
     if (signal == SIGINT) {
         std::cout << "\nInterrupt received. Shutting down gracefully..." << std::endl;
-        keepRunning= false;  // Set the flag to stop the program
         shutdown(true); 
+        keepRunning = false;  // Set the flag to stop the program
     }
 }
 
 Node::Node(const unsigned int id, const unsigned int numNodes): id(id), numNodes(numNodes), keepRunning(true),
-    frontier(NUM_OBJECTS, ERROR_RATE),
+    frontier(numNodes, id),
     indexHandler("./log/chunks"),
     tPool(NUM_CRAWL_THREADS + NUM_PARSER_THREADS),
-    alpacino(),
-    urlForwarder(numNodes, id, NUM_OBJECTS, ERROR_RATE),
     crawlResultsQueue()
 {
 
+    
+    
 }
 
-
-void Node::start(const string& seedlistPath) {
+void Node::start(const char * seedlistPath, const char * bfPath) {
     std::cout << "Node " << id << " started." << std::endl;
 
-    frontier.buildFrontier(seedlistPath.c_str());
+    if (frontier.buildFrontier(seedlistPath, bfPath) == 1) {
+        shutdown(false);
+        return;
+    }
 
     
     for (size_t i = 0; i < NUM_CRAWL_THREADS; i++)
@@ -42,23 +43,25 @@ void Node::start(const string& seedlistPath) {
 
 }
 
-void Node::shutdown(bool writeFrontier = false) {
-    // ! This causes a segfault on shutdown
-    // if (writeFrontier)  
-        // frontier.writeFrontier(1); 
-    std::cout << "Shutdown complete." << std::endl;
+void Node::shutdown(bool writeFrontier) {
+    if (keepRunning) {
+        if (writeFrontier)  
+            frontier.writeFrontier(); 
+        std::cout << "Shutdown complete." << std::endl;
+    }
 }
 
 
 
 void Node::crawl() {
 
+    Crawler alpacino;
+
     while (keepRunning) {
+        crawlResultsQueue.wait();
+
         ParsedUrl url = ParsedUrl(frontier.getNextURLorWait());
     
-
-        std::cout << "Started Crawling: " << url.urlName << std::endl;
-
         if (url.urlName.empty()){
             std::cout << "Crawl func exiting because URL was empty" << std::endl;
             std::cout << "This behaviour should only happen when the program is shutting down" << std::endl;
@@ -66,7 +69,7 @@ void Node::crawl() {
             break;
         }
 
-        crawlRobots(url.makeRobots(), url.Service + string("://") + url.Host);
+        crawlRobots(url.makeRobots(), url.Service + string("://") + url.Host, alpacino);
     
         auto buffer = std::make_unique<char[]>(BUFFER_SIZE);
     
@@ -76,22 +79,18 @@ void Node::crawl() {
     
         try {
             alpacino.crawl(url, buffer.get(), pageSize);
-            
-
+            crawlerResults cResult(url, buffer.get(), pageSize);
+            crawlResultsQueue.put(cResult);
         } catch (const std::runtime_error &e) {
             std::cerr << e.what() << std::endl;
         }
         
-        crawlerResults cResult(url, buffer.get(), pageSize);
-        crawlResultsQueue.put(cResult);
-            
-        std::cout << "Crawled: " << url.urlName << std::endl;
     }
 
 }
 
 
-void Node::crawlRobots(const ParsedUrl& robots, const string& base) {
+void Node::crawlRobots(const ParsedUrl& robots, const string& base, Crawler &alpacino) {
     if (!frontier.contains(robots.urlName)) {
 
         // use unique ptr
@@ -104,6 +103,8 @@ void Node::crawlRobots(const ParsedUrl& robots, const string& base) {
             const char * c = buffer.get();
             HtmlParser parser(c, pageSize, base);
             crawlerResults cResult(robots, buffer.get(), pageSize);
+
+
             for (const auto &goodlink : parser.bodyWords) {
                 frontier.insert(goodlink);
             }
@@ -121,17 +122,16 @@ void Node::crawlRobots(const ParsedUrl& robots, const string& base) {
 
 
 void Node::indexWrite(HtmlParser &parser) {
+    int count = indexHandler.index->DocumentsInIndex;
     switch (indexHandler.addDocument(parser)) {
         case -1:
             // whole frontier write
             std::cout << "Writing frontier and bloom filter out to file." << std::endl;
-            frontier.writeFrontier(1);
-            shutdown();
+            stats.report(count, this);
+            frontier.writeFrontier();
             break;
         case 1:
-            // smini frontier write -- int 5 denotes the random chance of writing a url to the file
-            std::cout << "Writing truncated frontier out to file" << std::endl;
-            frontier.writeFrontier(5);
+            stats.report(count, this);
             break;
         default:
             break;
@@ -147,7 +147,6 @@ void Node::parse() {
     
         HtmlParser parser(cResult.buffer.data(), cResult.pageSize);
 
-        std::cout << "Parsed: " << cResult.url.urlName << std::endl;
 
         for (const auto &link : parser.links) {
             frontier.insert(link.URL);
