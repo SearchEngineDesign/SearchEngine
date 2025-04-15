@@ -11,7 +11,7 @@
 #include <chrono>
 #include <fstream>
 #define timeNow() std::chrono::high_resolution_clock::now()
-#define duration(a) std::chrono::duration_cast<std::chrono::nanoseconds>(a).count()
+#define duration(a) std::chrono::duration_cast<std::chrono::seconds>(a).count()
 typedef std::chrono::high_resolution_clock::time_point TimeVar;
 
 #include <atomic>
@@ -77,7 +77,7 @@ class Node {
     static constexpr int NUM_OBJECTS = 1000000; // estimated number of objects for bloom filter
 
     static constexpr int NUM_CRAWL_THREADS = 256;
-    static constexpr int NUM_PARSER_THREADS = 256;
+    static constexpr int NUM_PARSER_THREADS = 512;
 
     unsigned int id;
     unsigned int numNodes;

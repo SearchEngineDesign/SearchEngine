@@ -58,10 +58,10 @@ void Node::crawl() {
     Crawler alpacino;
 
     while (keepRunning) {
+        crawlResultsQueue.wait();
+
         ParsedUrl url = ParsedUrl(frontier.getNextURLorWait());
     
-
-
         if (url.urlName.empty()){
             std::cout << "Crawl func exiting because URL was empty" << std::endl;
             std::cout << "This behaviour should only happen when the program is shutting down" << std::endl;
@@ -81,8 +81,6 @@ void Node::crawl() {
             alpacino.crawl(url, buffer.get(), pageSize);
             crawlerResults cResult(url, buffer.get(), pageSize);
             crawlResultsQueue.put(cResult);
-            
-
         } catch (const std::runtime_error &e) {
             std::cerr << e.what() << std::endl;
         }
@@ -124,15 +122,16 @@ void Node::crawlRobots(const ParsedUrl& robots, const string& base, Crawler &alp
 
 
 void Node::indexWrite(HtmlParser &parser) {
+    int count = indexHandler.index->DocumentsInIndex;
     switch (indexHandler.addDocument(parser)) {
         case -1:
             // whole frontier write
             std::cout << "Writing frontier and bloom filter out to file." << std::endl;
-            stats.report(indexHandler.index->DocumentsInIndex, this);
+            stats.report(count, this);
             frontier.writeFrontier();
             break;
         case 1:
-            //stat.report(sz);
+            stats.report(count, this);
             break;
         default:
             break;

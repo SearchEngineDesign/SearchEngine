@@ -14,6 +14,8 @@ class ThreadSafeQueue {
         pthread_mutex_t mutex; 
         pthread_cond_t cond;
 
+        static const int MAX_SIZE = 40000;
+
     public:
         ThreadSafeQueue() {
             pthread_mutex_init(&mutex, nullptr);
@@ -48,6 +50,13 @@ class ThreadSafeQueue {
         void emptyQueue() {
             pthread_mutex_lock(&mutex);
             std::queue<T>().swap(queue); // Clear the queue
+            pthread_mutex_unlock(&mutex);
+        }
+
+        void wait() {
+            pthread_mutex_lock(&mutex);
+            while (queue.size() > MAX_SIZE)
+                pthread_cond_wait(&cond, &mutex); 
             pthread_mutex_unlock(&mutex);
         }
 
