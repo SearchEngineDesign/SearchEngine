@@ -18,11 +18,11 @@ static float DOMAIN_WEIGHTS[DOMAIN_COUNT] = {1, 2, 1, 3, 3, 1};
 class StaticRanker {
     
     private:
-    float urlLengthWeight;
-    float domainWeight;
+    static constexpr float urlLengthWeight = 0;
+    static constexpr float domainWeight = 1;
         
 
-    float getTopLevelDomain(const ParsedUrl& url) const {
+    static float getTopLevelDomain(const ParsedUrl& url) {
         if (url.Host.empty()) return COM; // Default to COM if Host is empty
 
         const string& tld = url.Domain;
@@ -44,10 +44,10 @@ class StaticRanker {
     public:
     StaticRanker() = default;
 
-    StaticRanker(float urlLengthWeight, float domainWeight) 
-        : urlLengthWeight(urlLengthWeight), domainWeight(domainWeight) {}
+    // StaticRanker(float urlLengthWeight, float domainWeight) 
+    //     : urlLengthWeight(urlLengthWeight), domainWeight(domainWeight) {}
     
-    float rank(const ParsedUrl& url) const{
+    static float rank(const ParsedUrl& url) {
         if (url.urlName.empty()) return 0.0f;
         
         float rankScore = 0.0f;
@@ -61,7 +61,8 @@ class StaticRanker {
         return rankScore;
     }
     
-    bool operator() (const string &url1, const string &url2) {
-        return rank(ParsedUrl(url1)) < rank(ParsedUrl(url2));
+    static bool operator() (const string &url1, const string &url2) {
+        return rank(ParsedUrl(url1)) > rank(ParsedUrl(url2));
     }
+
 };
