@@ -63,7 +63,7 @@ struct SerialString
             return RoundUp(size, sizeof(size_t));
          }
 
-      static char *Write( char *buffer, const string *str ) {
+      static void *Write( char *buffer, const string *str ) {
             SerialString* t = reinterpret_cast<SerialString*>(buffer);
             for ( size_t i = 0; i < str->size(); i++ )
                t->data[i] = *(str->at(i));
@@ -134,7 +134,7 @@ struct SerialPostingList
          }
          
 
-      static char *Write( char *buffer, size_t len,
+      static void *Write( char *buffer, size_t len,
          const PostingList *p ) {
             size_t offset = 0;
             SerialPostingList* t = reinterpret_cast<SerialPostingList*>(buffer);
@@ -219,7 +219,7 @@ struct SerialTuple
       // Write the HashBucket out as a SerialTuple in the buffer,
       // returning a pointer to one past the last character written.
 
-      static char *Write( char *buffer, size_t len,
+      static void *Write( char *buffer, size_t len,
             const HashBucket *b )
          {
          SerialTuple* t = reinterpret_cast<SerialTuple*>(buffer);
@@ -417,7 +417,7 @@ struct SerialUrlTuple
    public:
 
       // Total size, starting point of value
-      size_t size, valueOffset;
+      size_t tupsize, valueOffset;
 
       // Calculate the bytes required to encode a HashBucket as a
       // SerialUrlTuple.
@@ -427,55 +427,50 @@ struct SerialUrlTuple
             size_t size = 0;
 
             // size_t size, valueOffset
-            size += sizeof(size_t) << 1;
+            size += (sizeof(size_t) << 1);
 
             // string key
             size += SerialString::BytesRequired(b->tuple.key);
 
-            size = RoundUp(size, sizeof(size_t));
-
             // int value
-            size += sizeof(int);
-            
-            return RoundUp(size, sizeof(size_t));
+            size += sizeof(size_t);
+            return size;
          }
 
       // Write the HashBucket out as a SerialUrlTuple in the buffer,
       // returning a pointer to one past the last character written.
 
-      static char *Write( char *buffer, size_t len,
+      static void *Write( char *buffer, size_t len,
             const Bucket<string, int> *b )
          {
          SerialUrlTuple* t = reinterpret_cast<SerialUrlTuple*>(buffer);
          size_t keySize = SerialString::BytesRequired(b->tuple.key);
-         size_t offset = sizeof(size_t) << 1;
+         size_t offset = (sizeof(size_t) << 1);
 
          // writing the key (string)
          SerialString::Write(buffer + offset, &b->tuple.key);
          offset += keySize;
-         offset = RoundUp(offset, sizeof(size_t));
          t->valueOffset = offset;
          
          // writing the value (int)
-         memcpy(buffer + offset, &(b->tuple.value), sizeof(int));
-         offset += sizeof(int);
-         offset = RoundUp(offset, sizeof(size_t));
+         memcpy(buffer + offset, &(b->tuple.value), sizeof(size_t));
+         offset += sizeof(size_t);
 
          // finally, write the size
-         t->size = offset;
+         t->tupsize = offset;
 
          }
 
       const size_t getSize() {
-         return size;
+         return tupsize;
       }
 
       const SerialString* Key() const {
          return reinterpret_cast<SerialString*>((char *)this + (sizeof(size_t) << 1));
       }
 
-      const int Value() const {
-         return *(reinterpret_cast<int*>((char *)this + valueOffset));
+      const size_t *Value() const {
+         return (reinterpret_cast<size_t*>((char *)this + valueOffset));
       }
   };
 
@@ -490,12 +485,12 @@ class UrlBlob
          chunkID,
          NumberOfBuckets; 
 
-      size_t offsets[ Unknown ]; // arr of byte offsets to documents and buckets
+      uint16_t offsets[ Unknown ]; // arr of byte offsets to documents and buckets
 
 
       // Returns the bucket in dict with token == key.
       // If there is no matching key, returns null.
-      const SerialUrlTuple *Find( const char *key ) const
+      const SerialUrlTuple *FindUrl( const char *key ) const
          {
          // Search for the key k and return a pointer to the
          // ( key, value ) entry.  If the key is not found,
@@ -558,9 +553,9 @@ class UrlBlob
 
          size_t offset = 0;
          // space for the 4 blob size_t members
-         size_t size = sizeof(size_t) << 2;
+         size_t size = (sizeof(size_t) << 2);
          // space to store the bucket offset array
-         size += temp.size() * sizeof(size_t);
+         size += temp.size() * sizeof(uint16_t);
 
          // set offset as the starting point for writing
          offset = size;

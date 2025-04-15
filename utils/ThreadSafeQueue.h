@@ -14,6 +14,8 @@ class ThreadSafeQueue {
         pthread_mutex_t mutex; 
         pthread_cond_t cond;
 
+        static const int MAX_SIZE = 40000;
+
     public:
         ThreadSafeQueue() {
             pthread_mutex_init(&mutex, nullptr);
@@ -23,7 +25,7 @@ class ThreadSafeQueue {
         void put(const T& item) {
             pthread_mutex_lock(&mutex);
             queue.push(item);
-            pthread_cond_signal(&cond); // Notify one waiting thread
+            pthread_cond_broadcast(&cond); // Notify ALL(?) waiting thread
             pthread_mutex_unlock(&mutex);
         }
 
@@ -51,9 +53,20 @@ class ThreadSafeQueue {
             pthread_mutex_unlock(&mutex);
         }
 
+        void wait() {
+            pthread_mutex_lock(&mutex);
+            while (queue.size() > MAX_SIZE)
+                pthread_cond_wait(&cond, &mutex); 
+            pthread_mutex_unlock(&mutex);
+        }
+
         ~ThreadSafeQueue() {
             pthread_mutex_destroy(&mutex);
             pthread_cond_destroy(&cond);
+        }
+
+        uint32_t size() {
+            return queue.size();
         }
 };
 
