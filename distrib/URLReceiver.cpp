@@ -36,8 +36,15 @@ void UrlReceiver::stopListening() {
     listenFlag = false;
 }
 
-UrlReceiver::UrlReceiver( const int id, const int port, ThreadSafeFrontier* frontierPtr) : id(id), port(port + id), frontierPtr(frontierPtr) {
+UrlReceiver::UrlReceiver( const int id, const uint16_t port, ThreadSafeFrontier* frontierPtr) :  frontierPtr(frontierPtr) {
     listenFlag = true;
+
+
+    
+    this->id = id;
+    this->port = port + this->id;
+
+    std::cout << "init url receiver " << id << " port "<< this->port <<std::endl;
 
     // start listener
     // (&thread, nullptr, listenerEntry, this);
@@ -48,24 +55,25 @@ void UrlReceiver::listener() {
 
     try {
         createServer();
-        std::cout << "URLReceiver started listening on port: " << port << std::endl; 
+        std::cout << "URLReceiver started listening on port: " << this->port << std::endl; 
     } catch (const std::exception &e) {
         std::cerr << "Error creating server: " << e.what() << std::endl;
         throw;
     }
 
-
     
-
-    int new_socket = accept(server_fd, (struct sockaddr*)&address, &addrlen);
-
-    while (new_socket < 0) {
-        std::cerr << "Error accepting connection" << std::endl;
-        sleep(1);  // Wait before retrying
-    }
-
     while (listenFlag) {
-       
+        int new_socket = accept(server_fd, (struct sockaddr*)&address, &addrlen);
+
+        std::cout << "accepted connection" << std::endl;
+
+        if (new_socket < 0) {
+            std::cerr << "Error accepting connection" << std::endl;
+            sleep(1);
+            continue;  // Retry accepting connections
+        }
+
+
        string buffer(1024);
        ssize_t total_received = 0;
 
@@ -78,6 +86,8 @@ void UrlReceiver::listener() {
             break;  // Connection closed by the client
         }
 
+
+        std::cout <<"RECEIVED DATA LFG" << std::endl;
 
         // ! THIS LOGIC MIGHT BE WRONG
 
@@ -114,9 +124,17 @@ void UrlReceiver::createServer() {
 
     // Set up address structure
     address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;  // Bind to any available network interface
-    address.sin_port = htons(port);  // Use the provided port
+    address.sin_port = htons(this->port);  // Use the provided port
+    
 
+    std::string ipEnv = std::string("NODE_IP") + std::to_string(id);
+
+    const char* ip = std::getenv(ipEnv.c_str());
+    std::cout << "IP FOR CREATE SERVER IS " << ip << std::endl;
+
+    address.sin_addr.s_addr = inet_addr(ip);
+    
+    
     if (bind(server_fd, (struct sockaddr*)&address, sizeof(address)) < 0) {
         std::cerr << "Failed to bind socket" << std::endl;
         throw std::runtime_error("Socket binding failed");
@@ -131,6 +149,9 @@ void UrlReceiver::createServer() {
     }
 
     addrlen = sizeof(address);
+
+
+    std::cout << "URLRECEIVER " << ip << ":" << port << std::endl;
 }
 
 

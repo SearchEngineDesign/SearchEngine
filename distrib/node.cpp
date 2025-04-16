@@ -6,17 +6,30 @@ void Node::handle_signal(int signal) {
         std::cout << "\nInterrupt received. Shutting down gracefully..." << std::endl;
         shutdown(true); 
         keepRunning = false;  // Set the flag to stop the program
+
+        for (size_t i = 0; i < numNodes; i++) {
+            if(i != id) {
+                urlReceivers[i].stopListening();
+            }
+        }
     }
 }
 
 Node::Node(const unsigned int id, const unsigned int numNodes): id(id), numNodes(numNodes), keepRunning(true),
     frontier(numNodes, id),
     indexHandler("./log/chunks"),
-    tPool(NUM_CRAWL_THREADS + NUM_PARSER_THREADS),
-    crawlResultsQueue()
+    crawlResultsQueue(),
+    urlReceivers(new UrlReceiver[numNodes]),
+    tPool(NUM_CRAWL_THREADS + NUM_PARSER_THREADS + numNodes)
 {
+    for (size_t i = 0; i < numNodes; i++) {
+        if(i == id) {
+            new (&urlReceivers[i]) UrlReceiver(i, 8080, &frontier);
 
-    
+        } else {
+            // urlReceivers.push_back(nullptr);
+        }
+    }
     
 }
 
@@ -28,6 +41,9 @@ void Node::start(const char * seedlistPath, const char * bfPath) {
         return;
     }
 
+
+
+
     
     for (size_t i = 0; i < NUM_CRAWL_THREADS; i++)
     {
@@ -37,6 +53,15 @@ void Node::start(const char * seedlistPath, const char * bfPath) {
     for (size_t i = 0; i < NUM_PARSER_THREADS; i++)
     {
         tPool.submit(parseEntry, (void*) this);
+    }
+
+
+    for (size_t i = 0; i < numNodes; i++)
+    {
+        if(i != id) {
+            tPool.submit(urlReceivers[i].listenerEntry, (void*) &urlReceivers[i]);
+
+        }
     }
     
 
@@ -60,7 +85,7 @@ void Node::crawl() {
     while (keepRunning) {
         crawlResultsQueue.wait();
 
-        ParsedUrl url = ParsedUrl(frontier.getNextURLorWait());
+        auto url = ParsedUrl(frontier.getNextURLorWait());
     
         if (url.urlName.empty()){
             std::cout << "Crawl func exiting because URL was empty" << std::endl;
@@ -81,6 +106,12 @@ void Node::crawl() {
             alpacino.crawl(url, buffer.get(), pageSize);
             crawlerResults cResult(url, buffer.get(), pageSize);
             crawlResultsQueue.put(cResult);
+
+            if (crawlResultsQueue.size() > 10000 or crawlResultsQueue.size() < 0) {
+                std::cout << "Crawl Results Queue size: " << crawlResultsQueue.size() << std::endl;
+                std::cout << "url: " << url.Host << std::endl;
+                exit(1);
+            }
         } catch (const std::runtime_error &e) {
             std::cerr << e.what() << std::endl;
         }
@@ -152,7 +183,7 @@ void Node::parse() {
             frontier.insert(link.URL);
         }
         
-        if (parser.base.size() != 0) {
+        if (parser.base.size() != 0 && rand() % 100 == 0) {
             std::cout << "Indexed: " << cResult.url.urlName << std::endl;
             indexWrite(parser);
         }

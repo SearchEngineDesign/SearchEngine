@@ -19,8 +19,8 @@ class ThreadSafeFrontier;
 class UrlReceiver {
 
     private:
-    int port;
-    int id;
+    size_t id;
+    uint16_t port;
     ThreadSafeFrontier * frontierPtr;
 
     
@@ -38,28 +38,25 @@ class UrlReceiver {
     string parseUrls(char * buffer);
 
 
-    static void * listenerEntry(void * arg) {
-        auto receiver = (UrlReceiver *) arg;
-        receiver->listener();
-        return nullptr;
-    }
-
+    
     void listener();
-
+    
     void createServer();
-
+    
 
     public: 
-
-        UrlReceiver() = default;
-
-        UrlReceiver( const int id, const int port, ThreadSafeFrontier* frontierPtr);
-
-        ~UrlReceiver();
-
-        void stopListening();
-
-
-        // Add other methods as needed
-
+    
+    UrlReceiver() = default;
+    
+    UrlReceiver( const int id, const uint16_t port, ThreadSafeFrontier* frontierPtr);
+    
+    ~UrlReceiver();
+    
+    void stopListening();
+    
+    static void listenerEntry(void * arg) {
+        auto receiver = (UrlReceiver *) arg;
+        receiver->listener();
+    }
+    
 };

@@ -25,8 +25,29 @@ int main(int argc, char * argv[]) {
     signal(SIGINT, handle_signal); // Register the signal handler for SIGINT    
 
 
-    const int numNodes = atoi(std::getenv("NUM_NODES"));
-    const int id = atoi(std::getenv("NODE_ID"));
+    const char * numNodesStr = std::getenv("NUM_NODES");
+    if (numNodesStr == nullptr) {
+        std::cerr << "NUM_NODES environment variable not set." << std::endl;
+        return 1;
+    }
+    const char * idStr = std::getenv("NODE_ID");
+    if (idStr == nullptr) {
+        std::cerr << "NODE_ID environment variable not set." << std::endl;
+        return 1;
+    }
+
+    const int numNodes = atoi(numNodesStr);
+
+    for (size_t i = 0; i < numNodes; i++) {
+        if (std::getenv(("NODE_IP" + std::to_string(i)).c_str()) == nullptr) {
+            std::cerr << "NODE_IP environment variable is not set for node: " << i << std::endl;
+            return 1;
+        }
+    }
+
+
+    
+    const int id = atoi(idStr);
 
     Node node(id, numNodes);
      

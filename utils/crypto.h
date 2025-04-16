@@ -6,21 +6,27 @@
 #include "../utils/string.h"
 #include <cassert>
 
+#include "../frontier/ReaderWriterLock.h"
+
 
 class Crypto {
     
     private:
-      EVP_MD_CTX* ctx;
-
-
+      EVP_MD_CTX* ctx = nullptr;
+        ReaderWriterLock lock;
     public:
-        Crypto() {
-            ctx = EVP_MD_CTX_new();
-            
-        }
+
+    Crypto() {
+        // std::cout << "make crpypto ctx from " << caller << std::endl;
+        ctx = EVP_MD_CTX_new();
+    }
+
 
         std::pair<uint64_t, uint64_t> doubleHash(const string &datum) {
-         
+            
+            WithWriteLock l(lock);
+            
+
             assert(datum.length() > 0);
 
             const EVP_MD* md = EVP_sha256();
@@ -46,9 +52,13 @@ class Crypto {
         }
 
 
-        size_t hashMod(const string& datum, size_t size) {
-            unsigned char hash_digest[EVP_MAX_MD_SIZE];
 
+
+        size_t hashMod(const string& datum, size_t size) {
+
+            WithWriteLock l(lock);
+
+            unsigned char hash_digest[EVP_MAX_MD_SIZE];
             
 
             EVP_DigestInit_ex(ctx, EVP_sha256(), nullptr);
@@ -64,6 +74,7 @@ class Crypto {
 
         ~Crypto() {
             EVP_MD_CTX_free(ctx);
+            ctx = nullptr;
         }
 
 };

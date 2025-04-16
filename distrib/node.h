@@ -87,6 +87,10 @@ class Node {
     ThreadSafeFrontier frontier;
     IndexWriteHandler indexHandler;
     ThreadSafeQueue<crawlerResults> crawlResultsQueue;
+
+    std::unique_ptr<UrlReceiver[]> urlReceivers;  
+
+
     ThreadPool tPool;
 
     void crawl();
