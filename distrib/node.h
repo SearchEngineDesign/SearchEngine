@@ -76,8 +76,9 @@ class Node {
     static constexpr float ERROR_RATE = 0.0001; // 0.01% error rate for bloom filter
     static constexpr int NUM_OBJECTS = 1000000; // estimated number of objects for bloom filter
 
-    static constexpr int NUM_CRAWL_THREADS = 256;
+    static constexpr int NUM_CRAWL_THREADS = 512;
     static constexpr int NUM_PARSER_THREADS = 512;
+    static constexpr int NUM_INDEX_THREADS = 512;
 
     unsigned int id;
     unsigned int numNodes;
@@ -87,6 +88,7 @@ class Node {
     ThreadSafeFrontier frontier;
     IndexWriteHandler indexHandler;
     ThreadSafeQueue<crawlerResults> crawlResultsQueue;
+    ThreadSafeQueue<std::shared_ptr<HtmlParser>> parseResultsQueue;
 
     std::unique_ptr<UrlReceiver[]> urlReceivers;  
 
@@ -96,6 +98,8 @@ class Node {
     void crawl();
 
     void parse();
+
+    void index();
 
     void crawlRobots(const ParsedUrl& robots, const string& base, Crawler &alpacino);
 
@@ -121,6 +125,11 @@ class Node {
     static void parseEntry(void *arg) {
         auto node = static_cast<Node*>(arg);
         node->parse();
+    }
+
+    static void indexEntry(void *arg) {
+        auto node = static_cast<Node*>(arg);
+        node->index();
     }
     
     void indexWrite(HtmlParser &parser);

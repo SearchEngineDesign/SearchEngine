@@ -18,9 +18,10 @@ void Node::handle_signal(int signal) {
 Node::Node(const unsigned int id, const unsigned int numNodes): id(id), numNodes(numNodes), keepRunning(true),
     frontier(numNodes, id),
     indexHandler("./log/chunks"),
+
     crawlResultsQueue(),
     urlReceivers(new UrlReceiver[numNodes]),
-    tPool(NUM_CRAWL_THREADS + NUM_PARSER_THREADS + numNodes)
+    tPool(NUM_CRAWL_THREADS + NUM_PARSER_THREADS + NUM_INDEX_THREADS + numNodes)
 {
     for (size_t i = 0; i < numNodes; i++) {
         if(i == id) {
@@ -64,7 +65,10 @@ void Node::start(const char * seedlistPath, const char * bfPath) {
         }
     }
     
-
+    for (size_t i = 0; i < NUM_INDEX_THREADS; i++)
+    {
+        tPool.submit(indexEntry, (void*) this);
+    }
 
 }
 
@@ -176,17 +180,25 @@ void Node::parse() {
     while (keepRunning) {
         crawlerResults cResult = crawlResultsQueue.get();
     
-        HtmlParser parser(cResult.buffer.data(), cResult.pageSize);
+        auto parser = std::make_unique<HtmlParser>(cResult.buffer.data(), cResult.pageSize);
 
-
-        for (const auto &link : parser.links) {
+        for (const auto &link : parser->links) {
             frontier.insert(link.URL);
         }
-        
-        if (parser.base.size() != 0 && rand() % 100 == 0) {
-            std::cout << "Indexed: " << cResult.url.urlName << std::endl;
-            indexWrite(parser);
-        }
+
+        parseResultsQueue.put(std::move(parser));
     }
 
+}
+
+void Node::index() {
+     while (keepRunning) {
+        auto pResult = parseResultsQueue.get();
+
+        
+        if (pResult->base.size() != 0) { //&& rand() % 100 == 0?
+            std::cout << "Indexed: " << pResult->base << std::endl;
+            indexWrite(*pResult);
+        }
+    }
 }
