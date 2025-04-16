@@ -89,6 +89,10 @@ class Node {
     IndexWriteHandler indexHandler;
     ThreadSafeQueue<crawlerResults> crawlResultsQueue;
     ThreadSafeQueue<std::shared_ptr<HtmlParser>> parseResultsQueue;
+
+    std::unique_ptr<UrlReceiver[]> urlReceivers;  
+
+
     ThreadPool tPool;
 
     void crawl();

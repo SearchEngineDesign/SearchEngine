@@ -2,7 +2,7 @@
 
 #include "../utils/vector.h"
 #include "../frontier/BloomFilter.h"
-#include <optional>
+// #include <optional>
 #include "../utils/crypto.h"
 
 #include <cassert>
@@ -26,14 +26,20 @@ class UrlForwarder {
         
         vector<string> ips;
 
-        vector<std::optional<Bloomfilter>> otherBloomFilters;
+        vector<Bloomfilter> bloomFilters;
         vector<vector<string>> urlQueues;
         Crypto crypto;
 
         void queueSend(const string& url, const size_t id) {
             // send url to node id
+
             assert (id < numNodes);
-            assert (id != selfId);
+
+            if (id == selfId) {
+                // do not send to self
+                return;
+            }
+
 
             auto& urlQueue = urlQueues[id];
 
@@ -59,13 +65,20 @@ class UrlForwarder {
             int sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
 
+            std::cout << "sending batch to node " << id << "on port: " << port <<  std::endl;
+            std::cout << "IP: " << ip << std::endl;
+
             sockaddr_in serv_addr = {};
             serv_addr.sin_family = AF_INET;
             serv_addr.sin_port = htons(port);
             inet_pton(AF_INET, ip.c_str(), &serv_addr.sin_addr);
         
+            std::cout << "URLFORWARDER " << ip << ":" << port << std::endl;
+
+
             if (connect(sockfd, (sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) {
                 // Handle error
+                std::cerr << "Error connecting to node " << id << std::endl;
                 close(sockfd);
                 return;
             }
@@ -77,6 +90,8 @@ class UrlForwarder {
                 payload.append(url);
                 payload.push_back('\n');
             }
+
+
 
              if (send(sockfd, payload.c_str(), payload.size(), 0) != 0) {
                 // Handle error
@@ -96,16 +111,13 @@ class UrlForwarder {
 
     UrlForwarder(size_t numNodes, size_t id) : numNodes(numNodes), selfId(id) {
         
+
+        urlQueues.resize(numNodes, vector<string>());
+
         // init bloom filters
-        otherBloomFilters.reserve(numNodes); 
+        bloomFilters.reserve(numNodes); 
         for (size_t i = 0; i < numNodes; i++) {
-            if (i == id) {
-                // otherBloomFilters[i] = std::nullopt;
-                otherBloomFilters.emplace_back(std::nullopt);
-            } else {
-                // otherBloomFilters[i].emplace(NUM_OBJECTS, ERROR_RATE);
-                otherBloomFilters.emplace_back(Bloomfilter(true));
-            }
+            bloomFilters.emplace_back(true);
         }
 
         
@@ -124,29 +136,23 @@ class UrlForwarder {
     }
 
     // TODO: add dist from seedlist
-    int addUrl(const string& url) {
+    std::pair<int, bool> addUrl(const string& url) {
         const unsigned int urlOwner = crypto.hashMod(url, numNodes);
+        auto& bloomFilter = bloomFilters[urlOwner];
 
-        if (not otherBloomFilters[urlOwner].has_value()) {
-            assert(urlOwner == selfId);
-            return urlOwner;
-        }
+        bool alreadySeen = bloomFilter.contains(url);
 
-        
-        auto& bloomFilter = otherBloomFilters[urlOwner].value();
-
-        const auto otherHasValue = bloomFilter.contains(url);
-
-        if (otherHasValue) {
-            return -1;
+        if (alreadySeen == false) {
+            bloomFilter.insert(url);
+            queueSend(url, urlOwner);
         }
         
+        return std::make_pair(urlOwner, alreadySeen);
+    }
 
-        bloomFilter.insert(url);
-        queueSend(url, urlOwner);
-        
-        return urlOwner;
 
+    inline Bloomfilter& getBloomFilter(const size_t id) {
+        return bloomFilters[id];
     }
 };
 
