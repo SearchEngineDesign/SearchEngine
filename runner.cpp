@@ -2,7 +2,7 @@
 #include "distrib/node.h"
 
 
-
+#include <cstdlib>
 
 static Node *instance;
 
@@ -25,7 +25,10 @@ int main(int argc, char * argv[]) {
     signal(SIGINT, handle_signal); // Register the signal handler for SIGINT    
 
 
-    Node node(0, 1);
+    const int numNodes = atoi(std::getenv("NUM_NODES"));
+    const int id = atoi(std::getenv("NODE_ID"));
+
+    Node node(id, numNodes);
      
     instance = &node;
 
