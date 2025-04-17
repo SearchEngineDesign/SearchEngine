@@ -2,3 +2,6 @@
 /.vscode/*.code-workspace
 log/
 *.dSYM/
+perf.*
+.env/
+.run_script.sh

@@ -91,6 +91,8 @@ template<typename T>
                }
          }
 
+      
+
       // Assignment operator
       // REQUIRES: Nothing
       // MODIFIES: *this
@@ -319,7 +321,7 @@ template<typename T>
          if ( this->vecSize >= this->vecCapacity ) 
             {
             if ( this->vecCapacity == 0 ) 
-               reserve( this->vecCapacity + 1 );
+               reserve( this->vecCapacity + 8 );
             else 
                reserve( this->vecCapacity * 2 );
             }
