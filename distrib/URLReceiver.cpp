@@ -16,11 +16,12 @@ string UrlReceiver::parseUrls(char * buffer) {
     int pos = substring.find("\n");
 
     while (pos != -1) {
-        const string& url = substring.substr(0, pos);        
+        const string& url = substring.substr(0, pos);  
+        //std::cout << "Recv: " << url << std::endl;    
 
         // add url to frontier
         
-        if (frontierPtr) {
+        if (frontierPtr && url.size() > 0) {
             frontierPtr->insert(url);
         }
 
@@ -63,7 +64,6 @@ void UrlReceiver::listener() {
     while (listenFlag) {
         int new_socket = accept(server_fd, (struct sockaddr*)&address, &addrlen);
 
-        std::cout << "accepted connection" << std::endl;
 
         if (new_socket < 0) {
             std::cerr << "Error accepting connection" << std::endl;
@@ -72,32 +72,28 @@ void UrlReceiver::listener() {
         }
 
 
-       string buffer(1024);
+       vector<char> buffer;
+       buffer.resize(1024, '\0');
        ssize_t total_received = 0;
 
-       while (true) {
-        ssize_t received = read(new_socket, buffer.data() + total_received, buffer.size() - total_received);
-        if (received < 0) {
-            std::cerr << "Error reading data" << std::endl;
-            break;  // Exit on error
-        } else if (received == 0) {
-            break;  // Connection closed by the client
+        while (true) {
+            ssize_t received = read(new_socket, buffer.data() + total_received, CHUNK_SIZE);
+            if (received < 0) {
+                std::cerr << "Error reading data" << std::endl;
+                break;  // Exit on error
+            } else if (received == 0) {
+                break;  // Connection closed by the client
+            }
+
+            total_received += received;
+            if (total_received >= buffer.size())
+                buffer.resize(buffer.size() * 2, '\0');
         }
+        parseUrls(buffer.data() + total_received);
+        
 
-
-        std::cout <<"RECEIVED DATA LFG" << std::endl;
-
-        // ! THIS LOGIC MIGHT BE WRONG
-
-        total_received += received;
-
-        buffer = parseUrls(buffer.data());
-        total_received = buffer.length();
-
-    }
-
-    // Close the connection after processing
-    close(new_socket);
+        // Close the connection after processing
+        close(new_socket);
 
 
 

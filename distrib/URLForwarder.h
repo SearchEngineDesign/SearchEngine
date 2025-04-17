@@ -65,20 +65,20 @@ class UrlForwarder {
             int sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
 
-            std::cout << "sending batch to node " << id << "on port: " << port <<  std::endl;
-            std::cout << "IP: " << ip << std::endl;
+            //std::cout << "sending batch to node " << id << "on port: " << port <<  std::endl;
+            //std::cout << "IP: " << ip << std::endl;
 
             sockaddr_in serv_addr = {};
             serv_addr.sin_family = AF_INET;
             serv_addr.sin_port = htons(port);
             inet_pton(AF_INET, ip.c_str(), &serv_addr.sin_addr);
         
-            std::cout << "URLFORWARDER " << ip << ":" << port << std::endl;
+            //std::cout << "URLFORWARDER " << ip << ":" << port << std::endl;
 
 
             if (connect(sockfd, (sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) {
                 // Handle error
-                std::cerr << "Error connecting to node " << id << std::endl;
+                //std::cerr << "Error connecting to node " << id << std::endl;
                 close(sockfd);
                 return;
             }

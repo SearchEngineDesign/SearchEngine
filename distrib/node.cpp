@@ -110,11 +110,11 @@ void Node::crawl() {
             crawlerResults cResult(url, buffer.get(), pageSize);
             crawlResultsQueue.put(cResult);
 
-            if (crawlResultsQueue.size() > 10000 or crawlResultsQueue.size() < 0) {
-                std::cout << "Crawl Results Queue size: " << crawlResultsQueue.size() << std::endl;
-                std::cout << "url: " << url.Host << std::endl;
-                exit(1);
-            }
+            // if (crawlResultsQueue.size() > 10000 or crawlResultsQueue.size() < 0) {
+            //     std::cout << "Crawl Results Queue size: " << crawlResultsQueue.size() << std::endl;
+            //     std::cout << "url: " << url.Host << std::endl;
+            //     exit(1);
+            // }
         } catch (const std::runtime_error &e) {
             std::cerr << e.what() << std::endl;
         }
@@ -195,7 +195,7 @@ void Node::index() {
         auto pResult = parseResultsQueue.get();
 
         
-        if (pResult->base.size() != 0 && rand() % 100 == 0) {
+        if (pResult->base.size() != 0) {
             std::cout << "Indexed: " << pResult->base << std::endl;
             indexWrite(*pResult);
         }

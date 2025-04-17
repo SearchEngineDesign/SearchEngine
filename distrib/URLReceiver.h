@@ -19,6 +19,9 @@ class ThreadSafeFrontier;
 class UrlReceiver {
 
     private:
+
+    static const uint32_t CHUNK_SIZE = 1024;
+
     size_t id;
     uint16_t port;
     ThreadSafeFrontier * frontierPtr;

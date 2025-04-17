@@ -26,14 +26,15 @@ class ThreadSafeQueue {
             pthread_mutex_lock(&mutex);
             queue.push(item);
             pthread_cond_broadcast(&cond); // Notify ALL(?) waiting thread
+            while (queue.size() > MAX_SIZE)
+                pthread_cond_wait(&cond, &mutex);
             pthread_mutex_unlock(&mutex);
         }
 
         T get() {
             pthread_mutex_lock(&mutex);
-            while (queue.empty()) {
+            while (queue.empty())
                 pthread_cond_wait(&cond, &mutex); // Wait for an item to be available
-            }
             T item = queue.front();
             queue.pop();
             pthread_mutex_unlock(&mutex);

@@ -61,7 +61,7 @@ class StaticRanker {
         return rankScore;
     }
     
-    static bool operator() (const string &url1, const string &url2) {
+    bool operator() (const string &url1, const string &url2) {
         return rank(ParsedUrl(url1)) > rank(ParsedUrl(url2));
     }
 
