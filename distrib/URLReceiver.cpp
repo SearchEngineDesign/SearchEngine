@@ -36,15 +36,13 @@ void UrlReceiver::stopListening() {
     listenFlag = false;
 }
 
-UrlReceiver::UrlReceiver( const int id, const uint16_t port, ThreadSafeFrontier* frontierPtr) :  frontierPtr(frontierPtr) {
+UrlReceiver::UrlReceiver( const int id_in, const uint16_t port_in, ThreadSafeFrontier* frontierPtr) :  frontierPtr(frontierPtr) {
     listenFlag = true;
-
-
     
-    this->id = id;
-    this->port = port + this->id;
+    this->id = id_in;
+    this->port = port_in + id_in;
 
-    std::cout << "init url receiver " << id << " port "<< this->port <<std::endl;
+    std::cout << "init url receiver " << this->id << " port "<< this->port <<std::endl;
 
     // start listener
     // (&thread, nullptr, listenerEntry, this);
@@ -55,7 +53,7 @@ void UrlReceiver::listener() {
 
     try {
         createServer();
-        std::cout << "URLReceiver started listening on port: " << this->port << std::endl; 
+        std::cout << "URLReceiver started listening on port: " << port << std::endl; 
     } catch (const std::exception &e) {
         std::cerr << "Error creating server: " << e.what() << std::endl;
         throw;

@@ -59,9 +59,8 @@ void Node::start(const char * seedlistPath, const char * bfPath) {
 
     for (size_t i = 0; i < numNodes; i++)
     {
-        if(i != id) {
+        if(i == id) {
             tPool.submit(urlReceivers[i].listenerEntry, (void*) &urlReceivers[i]);
-
         }
     }
     
@@ -196,7 +195,7 @@ void Node::index() {
         auto pResult = parseResultsQueue.get();
 
         
-        if (pResult->base.size() != 0) { //&& rand() % 100 == 0?
+        if (pResult->base.size() != 0 && rand() % 100 == 0) {
             std::cout << "Indexed: " << pResult->base << std::endl;
             indexWrite(*pResult);
         }
