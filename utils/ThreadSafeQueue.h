@@ -22,12 +22,13 @@ class ThreadSafeQueue {
             pthread_cond_init(&cond, nullptr);
         }
 
-        void put(const T& item) {
+        void put(const T& item, bool blocking) {
             pthread_mutex_lock(&mutex);
             queue.push(item);
             pthread_cond_broadcast(&cond); // Notify ALL(?) waiting thread
-            while (queue.size() > MAX_SIZE)
-                pthread_cond_wait(&cond, &mutex);
+            if (blocking)
+                while (queue.size() > MAX_SIZE)
+                    pthread_cond_wait(&cond, &mutex);
             pthread_mutex_unlock(&mutex);
         }
 

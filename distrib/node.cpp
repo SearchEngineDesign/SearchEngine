@@ -108,13 +108,7 @@ void Node::crawl() {
         try {
             alpacino.crawl(url, buffer.get(), pageSize);
             crawlerResults cResult(url, buffer.get(), pageSize);
-            crawlResultsQueue.put(cResult);
-
-            // if (crawlResultsQueue.size() > 10000 or crawlResultsQueue.size() < 0) {
-            //     std::cout << "Crawl Results Queue size: " << crawlResultsQueue.size() << std::endl;
-            //     std::cout << "url: " << url.Host << std::endl;
-            //     exit(1);
-            // }
+            crawlResultsQueue.put(cResult, true);
         } catch (const std::runtime_error &e) {
             std::cerr << e.what() << std::endl;
         }
@@ -185,7 +179,7 @@ void Node::parse() {
             frontier.insert(link.URL);
         }
 
-        parseResultsQueue.put(std::move(parser));
+        parseResultsQueue.put(std::move(parser), false);
     }
 
 }
