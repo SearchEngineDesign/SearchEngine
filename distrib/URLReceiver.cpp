@@ -17,7 +17,7 @@ string UrlReceiver::parseUrls(char * buffer) {
 
     while (pos != -1) {
         const string& url = substring.substr(0, pos);  
-        //std::cout << "Recv: " << url << std::endl;    
+        std::cout << "Recv: " << url << std::endl;    
 
         // add url to frontier
         
@@ -89,7 +89,7 @@ void UrlReceiver::listener() {
             if (total_received >= buffer.size())
                 buffer.resize(buffer.size() * 2, '\0');
         }
-        parseUrls(buffer.data() + total_received);
+        parseUrls(buffer.data());
         
 
         // Close the connection after processing

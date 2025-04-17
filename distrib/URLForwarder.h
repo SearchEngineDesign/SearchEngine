@@ -45,7 +45,7 @@ class UrlForwarder {
 
             urlQueue.push_back(url);
 
-            if (urlQueue.size() >= BATCH_SIZE) {
+            if (urlQueue.size() >= BATCH_SIZE && id != selfId) {
                 // send urlQueue to node id
                 // clear urlQueue
                 sendBatch(id);
