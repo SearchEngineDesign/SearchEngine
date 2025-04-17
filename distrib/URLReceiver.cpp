@@ -1,7 +1,7 @@
 #include "URLReceiver.h"
 
 
-#include "../utils/string.h"
+#include "../utils/searchstring.h"
 #include "../frontier/frontier.h"
 
 string UrlReceiver::parseUrls(char * buffer) {

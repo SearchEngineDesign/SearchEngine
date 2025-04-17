@@ -1,4 +1,4 @@
-// string.h
+// searchstring.h
 // 
 // Starter file for a string template
 
@@ -60,25 +60,26 @@ class string
       // EFFECTS: Creates a string with length and equivalent contents to cstr
       string( const char *cstr, size_t length, const char *end )
          {
-            if ( cstr )
+         if ( cstr )
             {
-               m_size = length;
-               m_capacity = m_size + 1;
-               m_data = new char[ m_capacity ];
-               int i = 0;
-               while (i < length && cstr != end ) {
-                  m_data[ i ] = *cstr;
-                  ++i;
-                  ++cstr;
+            m_size = length;
+            m_capacity = m_size + 1;
+            m_data = new char[ m_capacity ];
+            int i = 0;
+            while (i < length && cstr != end ) 
+               {
+               m_data[ i ] = *cstr;
+               ++i;
+               ++cstr;
                }
-               *(m_data + m_size) = '\0';
+            *(m_data + m_size) = '\0';
             }
-            else
+         else
             {
-               m_size = 0;
-               m_capacity = 1;
-               m_data = new char[1];
-               *m_data = '\0';
+            m_size = 0;
+            m_capacity = 1;
+            m_data = new char[1];
+            *m_data = '\0';
             }
          }
       
@@ -88,11 +89,10 @@ class string
       // EFFECTS: Creates a string with length
       string( size_t length )
          {
-
-            m_size = length;
-            m_capacity = m_size + 1;
-            m_data = new char[ m_capacity ];
-            *(m_data + m_size) = '\0';
+         m_size = length;
+         m_capacity = m_size + 1;
+         m_data = new char[ m_capacity ];
+         *(m_data + m_size) = '\0';
          }
 
 
@@ -102,12 +102,11 @@ class string
       // EFFECTS: Copy the contents of other to this
       string(const string &other) 
          {
-
-            m_size = other.m_size;
-            m_capacity = other.m_capacity;
-            m_data = new char[ other.m_capacity ];
-            memcpy(m_data, other.m_data, m_size + 1);
-            *(m_data + m_size) = '\0';
+         m_size = other.m_size;
+         m_capacity = other.m_capacity;
+         m_data = new char[ other.m_capacity ];
+         memcpy(m_data, other.m_data, m_size + 1);
+         *(m_data + m_size) = '\0';
          }
 
       // c_string converter
@@ -116,7 +115,12 @@ class string
       // EFFECTS: Returns m_data
       const char *c_str() const
          {
-            return m_data;
+         return m_data;
+         }
+
+      char * c_str()
+         {
+         return m_data;
          }
 
       // Length member function
@@ -195,6 +199,11 @@ class string
          {
             return m_data;
          }
+      char *cstr( )
+         {
+            return m_data;
+         }
+         
 
       // Iterator Begin
       // REQUIRES: Nothing

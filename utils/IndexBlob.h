@@ -20,7 +20,7 @@
 #include <sys/mman.h>
 
 #include "HashTable.h"
-#include "string.h"
+#include "searchstring.h"
 #include "vector.h"
 
 
@@ -35,7 +35,7 @@ class Post;
 static const size_t Unknown = 0;
 
 
-size_t RoundUp( size_t length, size_t boundary )
+static size_t RoundUp( size_t length, size_t boundary )
    {
    // Round up to the next multiple of the boundary, which
    // must be a power of 2.
@@ -68,6 +68,7 @@ struct SerialString
             SerialString* t = reinterpret_cast<SerialString*>(buffer);
             for ( size_t i = 0; i < str->size(); i++ )
                t->data[i] = *(str->at(i));
+            return buffer;
          }
 
       const char *c_str() const {
@@ -172,7 +173,7 @@ struct SerialPostingList
                t->offsets[i + t->seekIndex] = offset;
                offset += postSize;
             }
-               
+            return buffer;
          }
 
          const SerialPost *getPost( size_t i ) const {
@@ -241,7 +242,7 @@ struct SerialTuple
 
          // finally, write the size
          t->size = offset;
-
+         return buffer;
          }
 
       const size_t getSize() {
@@ -459,7 +460,7 @@ struct SerialUrlTuple
 
          // finally, write the size
          t->tupsize = offset;
-
+         return buffer;
          }
 
       const size_t getSize() {

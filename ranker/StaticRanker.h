@@ -1,6 +1,6 @@
 
 #include "../utils/ParsedUrl.h"
-#include "../utils/string.h"
+#include "../utils/searchstring.h"
 #include <cmath>
 
 enum TopLevelDomains {

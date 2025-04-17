@@ -3,7 +3,7 @@
 #include <openssl/evp.h>
 #include <openssl/sha.h>
 #include <utility>
-#include "../utils/string.h"
+#include "../utils/searchstring.h"
 #include <cassert>
 
 #include "../frontier/ReaderWriterLock.h"

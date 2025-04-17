@@ -1,4 +1,5 @@
 #include <sys/types.h>
+#include "IndexBlob.h"
 
 size_t RoundUp( size_t length, size_t boundary )
    {
