@@ -105,6 +105,7 @@ UrlReceiver::~UrlReceiver() {
     if (thread) {
         pthread_join(thread, nullptr);
     }
+    close(server_fd);
 
 }
 

@@ -190,7 +190,7 @@ void Node::index() {
 
         
         if (pResult->base.size() != 0) {
-            std::cout << "Indexed: " << pResult->base << std::endl;
+            std::cerr << "Indexed: " << pResult->base << std::endl;
             indexWrite(*pResult);
         }
     }
