@@ -62,8 +62,9 @@ class Node {
             std::cout << "Average: " << float(sz / dur) << " documents / second." << std::endl;
             std::cout << sitescrawled << " documents total." << std::endl << std::endl;
 
-            std::cout << node->crawlResultsQueue.size() << " items in Crawl Results Queue" << std::endl;
-            std::cout << node->frontier.size() << " items in Frontier" << std::endl;
+            std::cout << node->crawlResultsQueue.size() << " items in Crawl Results Queue." << std::endl;
+            std::cout << node->parseResultsQueue.size() << " items in Parse Results Queue." << std::endl;
+            std::cout << node->frontier.size() << " items in Frontier." << std::endl;
 
             std::cout.rdbuf(cout_sbuf); // Restore cout's original buffer
         }

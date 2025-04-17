@@ -13,7 +13,7 @@ enum TopLevelDomains {
     DOMAIN_COUNT
 };
 
-static float DOMAIN_WEIGHTS[DOMAIN_COUNT] = {1, 2, 1, 3, 3, 1};
+static float DOMAIN_WEIGHTS[DOMAIN_COUNT] = {1, 1.2, 1, 1.3, 1.4, 0.8};
 
 class StaticRanker {
     
