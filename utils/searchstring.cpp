@@ -1,4 +1,4 @@
-#include "string.h"
+#include "searchstring.h"
 #include <ostream>
 #include <istream>
 

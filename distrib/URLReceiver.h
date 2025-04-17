@@ -12,7 +12,7 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 
-#include "../utils/string.h"
+#include "../utils/searchstring.h"
 
 class ThreadSafeFrontier;
 
