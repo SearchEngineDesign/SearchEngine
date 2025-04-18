@@ -19,3 +19,6 @@
 [submodule "queryCompiler"]
 	path = queryCompiler
 	url = https://github.com/SearchEngineDesign/queryCompiler.git
+[submodule "frontend"]
+	path = frontend
+	url = https://github.com/SearchEngineDesign/frontend.git
