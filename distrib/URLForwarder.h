@@ -30,7 +30,7 @@ class UrlForwarder {
         vector<vector<string>> urlQueues;
         Crypto crypto;
 
-        void queueSend(const string& url, const size_t id) {
+        inline void queueSend(const string& url, const size_t id) {
             // send url to node id
 
             assert (id < numNodes);
@@ -136,7 +136,7 @@ class UrlForwarder {
     }
 
     // TODO: add dist from seedlist
-    std::pair<int, bool> addUrl(const string& url) {
+    inline std::pair<int, bool> addUrl(const string& url) {
         const unsigned int urlOwner = crypto.hashMod(url, numNodes);
         auto& bloomFilter = bloomFilters[urlOwner];
 

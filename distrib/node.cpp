@@ -7,30 +7,23 @@ void Node::handle_signal(int signal) {
         shutdown(true); 
         keepRunning = false;  // Set the flag to stop the program
 
-        for (size_t i = 0; i < numNodes; i++) {
-            if(i != id) {
-                urlReceivers[i].stopListening();
-            }
-        }
+ 
+                urlReceiver->stopListening();
+         
     }
 }
 
-Node::Node(const unsigned int id, const unsigned int numNodes): id(id), numNodes(numNodes), keepRunning(true),
-    frontier(numNodes, id),
-    indexHandler("./log/chunks"),
+Node::Node(const unsigned int id_in, const unsigned int numNodes): 
+    id(id_in), 
+    numNodes(numNodes), 
+    keepRunning(true),
+    frontier(numNodes, id_in),
 
     crawlResultsQueue(),
-    urlReceivers(new UrlReceiver[numNodes]),
-    tPool(NUM_CRAWL_THREADS + NUM_PARSER_THREADS + NUM_INDEX_THREADS + numNodes)
+    urlReceiver(),
+    tPool(NUM_CRAWL_THREADS + NUM_PARSER_THREADS + NUM_INDEX_THREADS + 1)
 {
-    for (size_t i = 0; i < numNodes; i++) {
-        if(i == id) {
-            new (&urlReceivers[i]) UrlReceiver(i, 8080, &frontier);
-
-        } else {
-            // urlReceivers.push_back(nullptr);
-        }
-    }
+    urlReceiver = std::make_shared<UrlReceiver>(id, 8080, &frontier);
     
 }
 
@@ -42,10 +35,6 @@ void Node::start(const char * seedlistPath, const char * bfPath) {
         return;
     }
 
-
-
-
-    
     for (size_t i = 0; i < NUM_CRAWL_THREADS; i++)
     {
         tPool.submit(crawlEntry, (void*) this);
@@ -57,12 +46,8 @@ void Node::start(const char * seedlistPath, const char * bfPath) {
     }
 
 
-    for (size_t i = 0; i < numNodes; i++)
-    {
-        if(i == id) {
-            tPool.submit(urlReceivers[i].listenerEntry, (void*) &urlReceivers[i]);
-        }
-    }
+    tPool.submit(urlReceiver->listenerEntry, (void*) urlReceiver.get());
+    
     
     for (size_t i = 0; i < NUM_INDEX_THREADS; i++)
     {
@@ -82,11 +67,9 @@ void Node::shutdown(bool writeFrontier) {
 
 
 void Node::crawl() {
-
     Crawler alpacino;
 
     while (keepRunning) {
-        crawlResultsQueue.wait();
 
         auto url = ParsedUrl(frontier.getNextURLorWait());
     
@@ -102,8 +85,6 @@ void Node::crawl() {
         auto buffer = std::make_unique<char[]>(BUFFER_SIZE);
     
         size_t pageSize = 0;
-    
-       
     
         try {
             alpacino.crawl(url, buffer.get(), pageSize);
@@ -132,13 +113,13 @@ void Node::crawlRobots(const ParsedUrl& robots, const string& base, Crawler &alp
             HtmlParser parser(c, pageSize, base);
             crawlerResults cResult(robots, buffer.get(), pageSize);
 
+            frontier.insert(parser.bodyWords);
 
-            for (const auto &goodlink : parser.bodyWords) {
-                frontier.insert(goodlink);
-            }
             for (const auto &badlink : parser.headWords) {
                 frontier.blacklist(badlink);
             }
+
+
         } catch (const std::runtime_error &e) {
             std::cerr << e.what() << std::endl;
         }
@@ -148,50 +129,27 @@ void Node::crawlRobots(const ParsedUrl& robots, const string& base, Crawler &alp
 }
 
 
-
-void Node::indexWrite(HtmlParser &parser) {
-    int count = indexHandler.index->DocumentsInIndex;
-    switch (indexHandler.addDocument(parser)) {
-        case -1:
-            // whole frontier write
-            std::cout << "Writing frontier and bloom filter out to file." << std::endl;
-            stats.report(count, this);
-            frontier.writeFrontier();
-            break;
-        case 1:
-            stats.report(count, this);
-            break;
-        default:
-            break;
-    }
-}
-
-
-
 void Node::parse() {
-
     while (keepRunning) {
         crawlerResults cResult = crawlResultsQueue.get();
     
         auto parser = std::make_unique<HtmlParser>(cResult.buffer.data(), cResult.pageSize);
 
-        for (const auto &link : parser->links) {
-            frontier.insert(link.URL);
-        }
-
+        frontier.insert(parser->links);
         parseResultsQueue.put(std::move(parser), false);
     }
 
 }
 
 void Node::index() {
+
+    IndexWriteHandler index(CHUNK_DIR);
+
      while (keepRunning) {
         auto pResult = parseResultsQueue.get();
-
-        
         if (pResult->base.size() != 0) {
             std::cerr << "Indexed: " << pResult->base << std::endl;
-            indexWrite(*pResult);
+            index.addDocument(*pResult);
         }
     }
 }

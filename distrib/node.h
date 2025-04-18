@@ -79,7 +79,9 @@ class Node {
 
     static constexpr int NUM_CRAWL_THREADS = 256;
     static constexpr int NUM_PARSER_THREADS = 512;
-    static constexpr int NUM_INDEX_THREADS = 512;
+    static constexpr int NUM_INDEX_THREADS = 16;
+
+    static constexpr char * CHUNK_DIR = "./log/chunks";
 
     unsigned int id;
     unsigned int numNodes;
@@ -87,11 +89,12 @@ class Node {
     std::atomic<bool> keepRunning;
 
     ThreadSafeFrontier frontier;
-    IndexWriteHandler indexHandler;
+    // IndexWriteHandler indexHandler;
     ThreadSafeQueue<crawlerResults> crawlResultsQueue;
     ThreadSafeQueue<std::shared_ptr<HtmlParser>> parseResultsQueue;
 
-    std::unique_ptr<UrlReceiver[]> urlReceivers;  
+    std::shared_ptr<UrlReceiver> urlReceiver = nullptr;  
+
 
 
     ThreadPool tPool;
@@ -110,7 +113,7 @@ class Node {
     Node()=default;
     
     
-    Node(const unsigned int id, const unsigned int numNodes);
+    Node(const unsigned int id_in, const unsigned int numNodes);
     
     
     void start(const char * seedlistPath, const char * bfPath);
@@ -133,7 +136,7 @@ class Node {
         node->index();
     }
     
-    void indexWrite(HtmlParser &parser);
+    void indexWrite(IndexWriteHandler &indexHandler, HtmlParser &parser);
 
 
     void handle_signal(int signal);
