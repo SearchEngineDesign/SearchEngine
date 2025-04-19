@@ -81,7 +81,7 @@ class Node {
     static constexpr int NUM_PARSER_THREADS = 512;
     static constexpr int NUM_INDEX_THREADS = 16;
 
-    static constexpr char * CHUNK_DIR = "./log/chunks";
+    const char * CHUNK_DIR = "./log/chunks";
 
     unsigned int id;
     unsigned int numNodes;

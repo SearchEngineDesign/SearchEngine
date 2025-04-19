@@ -125,9 +125,7 @@ class UrlForwarder {
         ips.reserve(numNodes);
         for (size_t i = 0; i < numNodes; i++)
         {
-            // MAN I LOVE REWRITING THE STRING CLASS
             const string envVar = string("NODE_IP") + string(std::to_string(i).c_str());
-            // ips[i] = std::getenv(envVar.c_str());
         
             ips.emplace_back(std::getenv(envVar.c_str()));
         }

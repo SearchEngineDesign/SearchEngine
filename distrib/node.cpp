@@ -35,6 +35,8 @@ void Node::start(const char * seedlistPath, const char * bfPath) {
         return;
     }
 
+    OPENSSL_init_ssl(OPENSSL_INIT_LOAD_SSL_STRINGS | OPENSSL_INIT_LOAD_CRYPTO_STRINGS, NULL);
+
     for (size_t i = 0; i < NUM_CRAWL_THREADS; i++)
     {
         tPool.submit(crawlEntry, (void*) this);
