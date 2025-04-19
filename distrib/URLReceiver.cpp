@@ -9,20 +9,19 @@ string UrlReceiver::parseUrls(char * buffer) {
     // delimit by new line
 
     auto urls = string(buffer);
-
+    std::cout << "Receiving urls" << std::endl;  
 
 
     string substring = urls.substr(0);
     int pos = substring.find("\n");
 
     while (pos != -1) {
-        const string& url = substring.substr(0, pos);  
-        std::cout << "Recv: " << url << std::endl;    
+        const string& url = substring.substr(0, pos);    
 
         // add url to frontier
         
         if (frontierPtr && url.size() > 0) {
-            frontierPtr->insert(url);
+            frontierPtr->insertWithoutForward(url);
         }
 
         substring = substring.substr(pos + 1);
@@ -86,7 +85,7 @@ void UrlReceiver::listener() {
             }
 
             total_received += received;
-            if (total_received >= buffer.size())
+            if (total_received >= buffer.size() - CHUNK_SIZE)
                 buffer.resize(buffer.size() * 2, '\0');
         }
         parseUrls(buffer.data());
@@ -129,7 +128,11 @@ void UrlReceiver::createServer() {
 
     address.sin_addr.s_addr = inet_addr(ip);
     
-    
+    int enable = 1;
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0) {
+        perror("setsockopt(SO_REUSEADDR) failed");
+        // Handle error
+    }
     if (bind(server_fd, (struct sockaddr*)&address, sizeof(address)) < 0) {
         std::cerr << "Failed to bind socket" << std::endl;
         throw std::runtime_error("Socket binding failed");
