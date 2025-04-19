@@ -347,12 +347,14 @@ def run_crawler():
                     }
                     json.dump(output_line, outfile, ensure_ascii=False)
                     outfile.write('\n')
+                    crt_completed_index = query_index + 1
                     # print(f"Results for query '{query}' saved to {args.output_file}")
                    
 
                     time.sleep(random.uniform(1, 2))
                     # print(f"Time taken for query with save '{query}': {time.time() - time_start:.2f} seconds")
                     print(f"==================\n==================\n")
+                crt_completed_page = page_num + 1
                 
         
         crawler.driver.quit()
