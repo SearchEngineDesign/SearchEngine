@@ -141,7 +141,6 @@ class UrlForwarder {
         bool alreadySeen = bloomFilter.contains(url);
 
         if (alreadySeen == false) {
-            bloomFilter.insert(url);
             queueSend(url, urlOwner);
         }
         
