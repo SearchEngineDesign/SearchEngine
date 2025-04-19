@@ -47,7 +47,6 @@ void Node::start(const char * seedlistPath, const char * bfPath) {
         tPool.submit(parseEntry, (void*) this);
     }
 
-
     tPool.submit(urlReceiver->listenerEntry, (void*) urlReceiver.get());
     
     
@@ -91,7 +90,7 @@ void Node::crawl() {
         try {
             alpacino.crawl(url, buffer.get(), pageSize);
             crawlerResults cResult(url, buffer.get(), pageSize);
-            crawlResultsQueue.put(cResult, true);
+            crawlResultsQueue.put(cResult, false);
         } catch (const std::runtime_error &e) {
             std::cerr << e.what() << std::endl;
         }
@@ -138,7 +137,7 @@ void Node::parse() {
         auto parser = std::make_unique<HtmlParser>(cResult.buffer.data(), cResult.pageSize);
 
         frontier.insert(parser->links);
-        parseResultsQueue.put(std::move(parser), false);
+        parseResultsQueue.put(std::move(parser), true);
     }
 
 }
