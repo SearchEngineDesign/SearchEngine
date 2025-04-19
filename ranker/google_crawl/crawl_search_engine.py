@@ -230,10 +230,12 @@ class SearchCrawler:
             raise e
 
 
-def write_index_to_file(index, filename):
+def write_index_to_file(query_index, page_num, filename):
     with open(filename, 'w') as f:
-                        f.write(str(index))
-                        print(f"Writing failed index to {filename} at index {index}")
+        f.write(str(query_index) + '\n')
+        f.write(str(page_num) + '\n')
+        print(f"Writing failed index to {filename} at index {query_index} and page {page_num}")
+        f.close()
 
 
 
@@ -252,15 +254,24 @@ def main():
         print(f"Failed to initialize the crawler: {e}")
         exit(1)
 
-    failed_index_file = 'failed_index.txt'
+
+    # The first line is the index of the last completed query
+    # The second line is the page number of the last completed query
+    failed_index_file = 'recovery_info.txt'
     if os.path.exists(failed_index_file):
         with open(failed_index_file, 'r') as f:
-            completed_count = int(f.read().strip())
-        print(f"Resuming from failed index: {completed_count}")
+            lines = f.readlines()
+            prev_completed_index = int(lines[0].strip())
+            prev_completed_page = int(lines[1].strip())
+        print(f"Resuming from index: {prev_completed_index}, page: {prev_completed_page}")
     else:
-        completed_count = 0
+        prev_completed_index = 0
+        prev_completed_page = 0
 
-    print(f"Already completed queries: {completed_count}")
+    crt_completed_index = 0
+    crt_completed_page = 0
+
+    print(f"Already completed queries: {prev_completed_index}")
 
     with open(args.query_file, 'r', encoding='utf-8') as f:
         queries = [line.strip() for line in f if line.strip()]
@@ -269,11 +280,16 @@ def main():
         with open(args.output_file, 'a', encoding='utf-8') as outfile:
             page_num_max = 13
             for page_num in range(0, page_num_max):
+                if page_num < prev_completed_page:
+                    print(f"Skipping page {page_num + 1} (already completed)")
+                    continue
+                crt_completed_page = page_num
                 for query_index, query in enumerate(queries):
                     time_start = time.time()
-                    if query_index < completed_count:
+                    
+                    if query_index < prev_completed_index:
                         continue
-
+                    crt_completed_index = query_index
                     MAX_RETRIES = 4
                     success = False
                     for attempt in range(1, MAX_RETRIES + 1):
@@ -288,7 +304,7 @@ def main():
                                 crawler.restart_driver()
                             except Exception as e:
                                 print(f"Restart Deriver failed: {e}")
-                                write_index_to_file(query_index, failed_index_file)
+                                write_index_to_file(crt_completed_page, crt_completed_index, failed_index_file)
                                 crawler.driver.quit()
                                 exit(1)
 
@@ -296,7 +312,7 @@ def main():
 
                     if not success:
                         print(f"‼️ All {MAX_RETRIES} attempts failed for query #{query_index}: '{query}'")
-                        write_index_to_file(query_index, failed_index_file)
+                        write_index_to_file(crt_completed_page, crt_completed_index, failed_index_file)
                         crawler.driver.quit()
                         exit(1)
                     
@@ -309,7 +325,7 @@ def main():
                         outfile.write('\n')
                         print(f"Results for query '{query}' saved to {args.output_file}")
                         print(f"==================")
-                        completed_count += 1
+                        
                     else:
                         print(f"No results found for query '{query}'")
                         
@@ -317,18 +333,18 @@ def main():
                         exit(1)
 
                     time.sleep(random.uniform(1, 2))
-                    time_end = time.time()
                     print(f"Time taken for query with save '{query}': {time.time() - time_start:.2f} seconds")
+                
         
         crawler.driver.quit()
     except KeyboardInterrupt:
         print("\n[!] KeyboardInterrupt received. Exiting gracefully.")
-        write_index_to_file(query_index, failed_index_file)
+        write_index_to_file(crt_completed_page, crt_completed_index, failed_index_file)
         crawler.driver.quit()
         exit(1)
     except Exception as e:
         print(f"[!] Error during execution: {e}")
-        write_index_to_file(query_index, failed_index_file)
+        write_index_to_file(crt_completed_page, crt_completed_index, failed_index_file)
         crawler.driver.quit()
         exit(1)
     finally:
