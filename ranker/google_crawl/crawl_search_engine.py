@@ -16,7 +16,7 @@ class SearchCrawler:
     def __init__(self, proxy=None):
         self.proxy = proxy
         self.init_driver()
-        self.seach_engine = ["google", "bing", "yahoo", "duckduckgo", "search.brave"]
+        self.seach_engine = ["google", "bing", "yahoo", "brave"]
 
     def init_driver(self):
         """Initialize the Selenium driver"""
@@ -60,12 +60,13 @@ class SearchCrawler:
         elif query_index % 4 == 1:
             return self.seach_engine[1]
         elif query_index % 4 == 2:
-            return self.seach_engine[0]
+            return self.seach_engine[2]
         else:
-            return self.seach_engine[1]
+            return self.seach_engine[3]
+
 
     def parse(self, engine_name, results, page_num, query):
-      if engine_name == "google":
+        if engine_name == "google":
             start = page_num * 10
             url = f"https://www.{engine_name}.com/search?q={query.replace(' ', '+')}&start={start}"
             print(f"query: {query}, page {page_num + 1}: {url}")
@@ -77,9 +78,9 @@ class SearchCrawler:
             )
             
             # time.sleep(random.uniform(3, 10))
-            WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "#search"))
-            )
+            # WebDriverWait(self.driver, 10).until(
+            #     EC.presence_of_element_located((By.CSS_SELECTOR, "#search"))
+            # )
             mjjyud_elements = self.driver.find_elements(By.CSS_SELECTOR, "div.MjjYud")
             if mjjyud_elements:
                 for position, mjjyud_element in enumerate(mjjyud_elements):
@@ -94,52 +95,124 @@ class SearchCrawler:
                     except Exception as e:
                         print(f"Error processing a result: {e}")
 
-      elif engine_name == "bing":
-        start = page_num * 10 + 1
-        url = f"https://www.{engine_name}.com/search?q={query.replace(' ', '+')}&first={start}"
-        print(f"query: {query}, page {page_num + 1}: {url}")
+        elif engine_name == "bing":
+            start = page_num * 10 + 1
+            url = f"https://www.{engine_name}.com/search?q={query.replace(' ', '+')}&first={start}"
+            print(f"query: {query}, page {page_num + 1}: {url}")
 
-        self.driver.get(url)
+            self.driver.get(url)
 
-        # time.sleep(random.uniform(3, 10))
-        WebDriverWait(self.driver, 10).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "#b_results"))
-        )
-        mjjyud_elements = self.driver.find_elements(By.CSS_SELECTOR, "li.b_algo")
-        with open("raw_results.html", "w", encoding="utf-8") as f:
-            for element in mjjyud_elements:
-                html = element.get_attribute("outerHTML")
-                f.write(html + "\n\n")
+            # time.sleep(random.uniform(3, 10))
+            WebDriverWait(self.driver, 10).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, "#b_results"))
+            )
+            mjjyud_elements = self.driver.find_elements(By.CSS_SELECTOR, "li.b_algo")
+            # with open("raw_results.html", "w", encoding="utf-8") as f:
+            #     for element in mjjyud_elements:
+            #         html = element.get_attribute("outerHTML")
+            #         f.write(html + "\n\n")
 
-        if mjjyud_elements:
-            for position, mjjyud_element in enumerate(mjjyud_elements):
-                try:
-                    specific_elements = mjjyud_element.find_elements(By.TAG_NAME, "h2")
-                    specific_elements = specific_elements[0].find_elements(By.TAG_NAME, "a")
-                    # with open("raw_results_2.html", "w", encoding="utf-8") as f:
-                    #     for element in specific_elements:
-                    #         html = element.get_attribute("outerHTML")
-                    #         f.write(html + "\n\n")
+            if mjjyud_elements:
+                for position, mjjyud_element in enumerate(mjjyud_elements):
+                    try:
+                        specific_elements = mjjyud_element.find_elements(By.TAG_NAME, "h2")
+                        specific_elements = specific_elements[0].find_elements(By.TAG_NAME, "a")
+                        # with open("raw_results_2.html", "w", encoding="utf-8") as f:
+                        #     for element in specific_elements:
+                        #         html = element.get_attribute("outerHTML")
+                        #         f.write(html + "\n\n")
 
-                    for specific_element in specific_elements:
-                        href = specific_element.get_attribute('href')
-                        if href:
-                            results.append({
-                                "href": href
-                            })
-                except Exception as e:
-                    print(f"Error processing a result: {e}")
-      elif engine_name == "yahoo":  
-          pass
-      elif engine_name == "duckduckgo":
-            pass
-      else:
+                        for specific_element in specific_elements:
+                            href = specific_element.get_attribute('href')
+                            if href:
+                                results.append({
+                                    "href": href
+                                })
+                    except Exception as e:
+                        print(f"Error processing a result: {e}")
+        elif engine_name == "yahoo":  
+            start = page_num * 10 + 1
+            url = f"https://www.search.{engine_name}.com/search?p={query.replace(' ', '+')}&b={start}"
+            print(f"query: {query}, page {page_num + 1}: {url}")
+
+            self.driver.get(url)
+
+            WebDriverWait(self.driver, 10).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, "#web.web-res"))
+            )
+
+            mjjyud_elements = self.driver.find_elements(By.CSS_SELECTOR, "div.compTitle.options-toggle")
+
+            if (mjjyud_elements == []):
+                print("not found")
+
+            # Find all result elements
+            if mjjyud_elements:
+                for position, mjjyud_element in enumerate(mjjyud_elements):
+                    try:
+                        specific_elements = mjjyud_element.find_elements(By.TAG_NAME, "h3")
+                        specific_elements = specific_elements[0].find_elements(By.TAG_NAME, "a")
+                        # with open("raw_results_2.html", "w", encoding="utf-8") as f:
+                        #     for element in specific_elements:
+                        #         html = element.get_attribute("outerHTML")
+                        #         f.write(html + "\n\n")
+                        for specific_element in specific_elements:
+                            href = specific_element.get_attribute('href')
+                            print("Anchor URL:", href)
+                            if href:
+                                results.append({
+                                    "href": href
+                                })
+                    except Exception as e:
+                        print(f"Error processing a result: {e}")
+
+        elif engine_name == "brave":
+            start = page_num
+            url = f"https://search.{engine_name}.com/search?q={query.replace(' ', '+')}&offset={start}"
+            print(f"query: {query}, page {page_num + 1}: {url}")
+
+            self.driver.get(url)
+
+            WebDriverWait(self.driver, 10).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, "#results"))
+            )
+
+            # html_content = self.driver.page_source
+            # # Write the HTML content to a file
+            # with open("page_content.html", "w", encoding="utf-8") as file:
+            #     file.write(html_content)
+
+            mjjyud_elements = self.driver.find_elements(By.CSS_SELECTOR, 'div.snippet[data-type="web"]')
+            with open("raw_results.html", "w", encoding="utf-8") as f:
+                for element in mjjyud_elements:
+                    html = element.get_attribute("outerHTML")
+                    f.write(html + "\n\n")
+
+            # Find all result elements
+            if mjjyud_elements:
+                for position, mjjyud_element in enumerate(mjjyud_elements):
+                    try:
+                        specific_elements = mjjyud_element.find_elements(By.CSS_SELECTOR, "a[target='_self']")
+                        with open("raw_results_2.html", "w", encoding="utf-8") as f:
+                            for element in specific_elements:
+                                html = element.get_attribute("outerHTML")
+                                f.write(html + "\n\n")
+                        for specific_element in specific_elements:
+                            href = specific_element.get_attribute('href')
+                            print("Anchor URL:", href)
+                            if href:
+                                results.append({
+                                    "href": href
+                                })
+                    except Exception as e:
+                        print(f"Error processing a result: {e}")
+        else:
             print(f"Unknown search engine: {engine_name}")
         
 
     def crawl_results(self, query_index, query, page_num):
         engine_name = self.find_engine(query_index)
-       
+
         time_start = time.time()
         results = []
         try:
