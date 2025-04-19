@@ -35,6 +35,10 @@ int main(int argc, char * argv[]) {
         std::cerr << "NODE_ID environment variable not set." << std::endl;
         return 1;
     }
+    if (atoi(idStr) > atoi(numNodesStr)) {
+        std::cerr << "NODE_ID too high!" << std::endl;
+        return 1;
+    }
 
     const int numNodes = atoi(numNodesStr);
 
