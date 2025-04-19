@@ -137,7 +137,7 @@ void Node::parse() {
         auto parser = std::make_unique<HtmlParser>(cResult.buffer.data(), cResult.pageSize);
 
         frontier.insert(parser->links);
-        parseResultsQueue.put(std::move(parser), true);
+        parseResultsQueue.put(std::move(parser), false);
     }
 
 }
@@ -149,7 +149,7 @@ void Node::index() {
      while (keepRunning) {
         auto pResult = parseResultsQueue.get();
         if (pResult->base.size() != 0) {
-            std::cerr << "Indexed: " << pResult->base << std::endl;
+            //std::cerr << "Indexed: " << pResult->base << std::endl;
             index.addDocument(*pResult);
         }
     }

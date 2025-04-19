@@ -77,9 +77,9 @@ class Node {
     static constexpr float ERROR_RATE = 0.0001; // 0.01% error rate for bloom filter
     static constexpr int NUM_OBJECTS = 1000000; // estimated number of objects for bloom filter
 
-    static constexpr int NUM_CRAWL_THREADS = 256;
+    static constexpr int NUM_CRAWL_THREADS = 512;
     static constexpr int NUM_PARSER_THREADS = 512;
-    static constexpr int NUM_INDEX_THREADS = 16;
+    static constexpr int NUM_INDEX_THREADS = 8;
 
     const char * CHUNK_DIR = "./log/chunks";
 
