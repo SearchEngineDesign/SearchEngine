@@ -1,72 +1,54 @@
-import os
+import psutil
 import subprocess
 from time import sleep
 import sys
+import os
+import signal
 
-from google.cloud import storage
+THRESHOLD = 70
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="$HOME/.config/gcloud/application_default_credentials.json"
-
-from oauth2client.service_account import ServiceAccountCredentials
-
-LOG_FILE = 'out'
-SLEEP_INTERVAL = 30
-MAX_CHUNKS = 100
-
-def upload_to_bucket(blob_name, path_to_file, bucket_name):
-    """ Upload data to a bucket"""
-     
-    # Explicitly use service account credentials by specifying the private key
-    # file.
-    storage_client = storage.Client.from_service_account_json(
-        'creds.json')
-
-    #print(buckets = list(storage_client.list_buckets())
-
-    bucket = storage_client.get_bucket(bucket_name)
-    blob = bucket.blob(blob_name)
-    blob.upload_from_filename(path_to_file)
-    
-    #returns a public url
-    return blob.public_url
+def kill(pid):
+    os.kill(pid, signal.SIGINT)
+    sleep(60)
+    os.kill(pid)
 
 def run():
     sys.stdout.reconfigure(encoding='utf-8')
-    result = subprocess.Popen(
-        ['./search', "./log/frontier/list", "./log/frontier/bloomfilter.bin", ">", LOG_FILE], 
-        stdout=subprocess.PIPE, 
-        stderr=subprocess.PIPE, 
-        text=True
+    process = subprocess.Popen(
+        ['nohup'] + ["./run_script.sh"],
+        stdout=open('nohup.out', 'w'),
+        stderr=open('nohup.out', 'a'),
+        preexec_fn=lambda: signal.signal(signal.SIGHUP, signal.SIG_IGN),
+        start_new_session=True
     )
+    # TODO: live output of nohup.out, kill process when python process is killed, also nohup python process
+    file_path = "nohup.out"
+    pid = process.pid
 
-    oldln = 0
-    newln = 0
+    old_size = 0
+    new_size = 0
+    new_mem = 0
     
     while True:
-        sleep(SLEEP_INTERVAL)
-        newln = len(os.listdir("./log/chunks"))
-        if newln == oldln:
-            print("Process stalled. Restarting...")
-            result.terminate()
-            sleep(SLEEP_INTERVAL)
-            if result.poll() is None: # if subprocess hasn't shut down
-                result.kill()
-            result = subprocess.Popen(
-                ['./search', "./log/frontier/list", "./log/frontier/bloomfilter.bin", ">", LOG_FILE], 
-                stdout=subprocess.PIPE, 
-                stderr=subprocess.PIPE, 
-                text=True
-            )
-        elif newln > MAX_CHUNKS:
-            print("Transferring chunks...")
-            upload_to_bucket()
-        oldln = newln
-
-
-
+        sleep(30)
+        new_size = os.path.getsize(file_path)
+        if (new_size < old_size + 20):
+            print("Crawler stalled. Restarting...")
+            kill(pid)
+        process_psutil = psutil.Process(pid)
+        memory_info = process_psutil.memory_info()
+        new_mem = memory_info.rss / (1024**3)
+        if (new_mem > THRESHOLD):
+            print("Crawler exceeded memory threshold. Restarting...")
+            kill(pid)
+            return
 
 def main():
-    run()
+    while True:
+        subprocess.run(["make", "clean"])
+        subprocess.run(["make"])
+        print("Running crawler.")
+        run()
 
 if __name__ == '__main__':
     main()
