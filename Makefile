@@ -27,9 +27,7 @@ all: search
 search: runner.cpp parser/HtmlParser.cpp parser/HtmlTags.cpp Crawler/crawler.cpp utils/searchstring.cpp index/index.cpp frontier/frontier.cpp utils/Utf8.cpp distrib/node.cpp distrib/URLReceiver.cpp index/stemmer/stemmer.cpp 
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ $(LDFLAGS) $(RPATH_FLAG) -lutf8proc -lssl -lcrypto -lz -o search -g
 ifeq ($(UNAME_S),Darwin)
-	install_name_tool -id "@rpath/libutf8proc.3.dylib" index/stemmer/utf8proc/libutf8proc.dylib
-	install_name_tool -change /usr/local/lib/libutf8proc.3.dylib @rpath/libutf8proc.3.dylib search
-	install_name_tool -add_rpath "@executable_path/index/stemmer/utf8proc" search
+
 endif
 
 .PHONY: clean
