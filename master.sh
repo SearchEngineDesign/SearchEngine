@@ -8,7 +8,7 @@ sleep_interval=30 # Check interval in seconds
 cleanup() {
   echo "Terminating other processes..."
   pkill -SIGINT "$process_name"
-  sleep $sleep_interval
+  sleep 120
   pkill "$process_name"
   exit 0 # Exit the script after cleanup
 }
@@ -39,9 +39,9 @@ while true; do
   if (( $(echo "$current_memory_int > $memory_limit_mb" | bc -l) )); then
     echo "$(date) - Memory usage of '$process_name' is $current_memory_usage MB, exceeding limit of $memory_limit_mb MB. Restarting..."
     pkill -SIGINT "$process_name"
-    sleep $sleep_interval
+    sleep 120
     pkill "$process_name"
-    nohup ./master & > nohup.out
+    nohup ./run_script.sh & > nohup.out
     echo "$(date) - Process '$process_name' restarted."
   else
     echo "$(date) - Memory usage of '$process_name' is $current_memory_usage MB. Within limit."

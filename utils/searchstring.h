@@ -450,6 +450,34 @@ class string
             return -1; 
          }
 
+      // find
+      // REQUIRES: Nothing
+      // MODIFIES: Nothing
+      // EFFECTS: Returns true if string contains s, false otherwise
+      bool contains( const char *s ) const
+         {
+            if (!s || !*s) return false;
+
+            size_t s_length = 0;
+            while (s[s_length] != '\0') 
+            {
+               ++s_length;
+            }
+            if (s_length == 0) return true;
+            if (s_length > m_size) return false;
+
+            for (size_t i = 0; i <= m_size - s_length; ++i) {
+               size_t j = 0;
+               while (j < s_length && m_data[i + j] == s[j]) {
+                  ++j;
+               }
+               if (j == s_length) {
+                  return true; 
+               }
+            }
+            return false; 
+         }
+
       int find( const char *s, size_t pos ) const
          {
             if (!s || !*s) return -1;

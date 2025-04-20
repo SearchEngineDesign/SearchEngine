@@ -58,10 +58,6 @@ class StaticRanker {
 
         rankScore -= log(url.urlName.length());
 
-        // For rigging the system. TODO: Remove this!
-        if (url.Host.find("wikipedia") != 1)
-            rankScore += 1;
-
         return rankScore;
     }
     
