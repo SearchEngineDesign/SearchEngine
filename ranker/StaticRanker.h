@@ -56,7 +56,7 @@ class StaticRanker {
 
         rankScore -= (log(url.Path.charcount('/')) / 2);
 
-        rankScore -= log(url.urlName.length());
+        //rankScore -= log(url.urlName.length());
 
         return rankScore;
     }

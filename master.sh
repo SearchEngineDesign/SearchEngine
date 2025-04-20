@@ -29,7 +29,7 @@ while true; do
     echo "$(date) - Process '$process_name' restarted."
   fi
   current_memory_usage=$(cat /proc/$(pgrep "$process_name")/status | grep VmRSS)
-  current_memory_int=$(echo "$current_memory_usage" | tr -d -c 0-9)
+  current_memory_int=$(echo "$current_memory_usage" | sed 's/[^0-9]*//g' )
 
   if [[ -z "$current_memory_usage" ]]; then
     echo "Process '$process_name' not found. Exiting."
@@ -43,9 +43,18 @@ while true; do
     pkill "$process_name"
     nohup ./run_script.sh & > nohup.out
     echo "$(date) - Process '$process_name' restarted."
+  elif [ "$current_memory_int" = "$old_memory_int" ]; then
+    echo "$(date) - '$process_name' stalled. Restarting..."
+    pkill -SIGINT "$process_name"
+    sleep 120
+    pkill "$process_name"
+    nohup ./run_script.sh & > nohup.out
+    echo "$(date) - Process '$process_name' restarted."
   else
     echo "$(date) - Memory usage of '$process_name' is $current_memory_usage MB. Within limit."
   fi
+
+  old_memory_int=$(echo "$current_memory_usage" | sed 's/[^0-9]*//g' )
 
   
 done

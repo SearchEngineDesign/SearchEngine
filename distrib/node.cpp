@@ -59,6 +59,7 @@ void Node::start(const char * seedlistPath, const char * bfPath) {
 
 void Node::shutdown(bool writeFrontier) {
     if (keepRunning) {
+        std::cout << frontier.size() << " items in frontier." << std::endl;
         if (writeFrontier)  
             frontier.writeFrontier(); 
         std::cout << "Shutdown complete." << std::endl;
