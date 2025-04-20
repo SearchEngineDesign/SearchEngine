@@ -5,11 +5,7 @@ void Node::handle_signal(int signal) {
     if (signal == SIGINT) {
         std::cout << "\nInterrupt received. Shutting down gracefully..." << std::endl;
         shutdown(true); 
-        keepRunning = false;  // Set the flag to stop the program
-
- 
-                urlReceiver->stopListening();
-         
+        urlReceiver->stopListening();
     }
 }
 
@@ -59,7 +55,11 @@ void Node::start(const char * seedlistPath, const char * bfPath) {
 
 void Node::shutdown(bool writeFrontier) {
     if (keepRunning) {
+        keepRunning = false;
         std::cout << frontier.size() << " items in frontier." << std::endl;
+        frontier.startReturningEmpty();
+        parseResultsQueue.stop();
+        crawlResultsQueue.stop();
         if (writeFrontier)  
             frontier.writeFrontier(); 
         std::cout << "Shutdown complete." << std::endl;
