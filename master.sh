@@ -7,7 +7,9 @@ sleep_interval=30 # Check interval in seconds
 
 cleanup() {
   echo "Terminating other processes..."
-  kill $(pgrep "$process_name")
+  pkill -SIGINT "$process_name"
+  sleep $sleep_interval
+  pkill "$process_name"
   exit 0 # Exit the script after cleanup
 }
 
@@ -27,13 +29,14 @@ while true; do
     echo "$(date) - Process '$process_name' restarted."
   fi
   current_memory_usage=$(cat /proc/$(pgrep "$process_name")/status | grep VmRSS)
+  current_memory_int=$(echo "$current_memory_usage" | tr -d -c 0-9)
 
   if [[ -z "$current_memory_usage" ]]; then
     echo "Process '$process_name' not found. Exiting."
     exit 1
   fi
 
-  if (( $(echo "$current_memory_usage > $memory_limit_mb" | bc -l) )); then
+  if (( $(echo "$current_memory_int > $memory_limit_mb" | bc -l) )); then
     echo "$(date) - Memory usage of '$process_name' is $current_memory_usage MB, exceeding limit of $memory_limit_mb MB. Restarting..."
     pkill -SIGINT "$process_name"
     sleep $sleep_interval
