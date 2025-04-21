@@ -14,6 +14,8 @@ class ThreadSafeQueue {
         pthread_mutex_t mutex; 
         pthread_cond_t cond;
 
+        bool kill = false;
+
         static const int MAX_SIZE = 40000;
 
     public:
@@ -34,7 +36,7 @@ class ThreadSafeQueue {
 
         T get() {
             pthread_mutex_lock(&mutex);
-            while (queue.empty())
+            while (queue.empty() && !false)
                 pthread_cond_wait(&cond, &mutex); // Wait for an item to be available
             T item = queue.front();
             queue.pop();
@@ -53,6 +55,12 @@ class ThreadSafeQueue {
             pthread_mutex_lock(&mutex);
             std::queue<T>().swap(queue); // Clear the queue
             pthread_mutex_unlock(&mutex);
+        }
+
+        void stop() {
+            kill = true;
+            std::cout << "Freeing queue..." << std::endl;
+            pthread_cond_broadcast(&cond);
         }
 
         void wait() {
