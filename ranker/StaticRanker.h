@@ -3,6 +3,8 @@
 #include "../utils/searchstring.h"
 #include <cmath>
 
+
+
 enum TopLevelDomains {
     COM,
     ORG,
@@ -20,6 +22,8 @@ class StaticRanker {
     private:
     static constexpr float urlLengthWeight = 0;
     static constexpr float domainWeight = 1;
+
+    
         
 
     static float getTopLevelDomain(const ParsedUrl& url) {
@@ -35,7 +39,6 @@ class StaticRanker {
         else if (tld == "edu") tldEnum = EDU;
         else if (tld == "gov") tldEnum = GOV;
         else if (tld == "io") tldEnum = IO;
-
         
         return DOMAIN_WEIGHTS[tldEnum] * domainWeight;
     }
@@ -57,6 +60,7 @@ class StaticRanker {
         rankScore -= (log(url.Path.charcount('/')) / 2);
 
         //rankScore -= log(url.urlName.length());
+                
 
         return rankScore;
     }
