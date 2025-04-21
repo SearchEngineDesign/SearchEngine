@@ -57,9 +57,9 @@ void Node::shutdown(bool writeFrontier) {
     if (keepRunning) {
         keepRunning = false;
         std::cout << frontier.size() << " items in frontier." << std::endl;
-        frontier.startReturningEmpty();
+        //frontier.startReturningEmpty();
         parseResultsQueue.stop();
-        crawlResultsQueue.stop();
+        //crawlResultsQueue.stop();
         if (writeFrontier)  
             frontier.writeFrontier(); 
         std::cout << "Shutdown complete." << std::endl;
