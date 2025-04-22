@@ -207,9 +207,9 @@ struct SerialTuple
             size += sizeof(size_t) << 1;
 
             // string key
-            size += SerialString::BytesRequired(b->tuple.key);
+            size += SerialString::BytesRequired(b->tuple.key) + 1;
 
-            size = RoundUp(size, sizeof(size_t));
+            //size = RoundUp(size, sizeof(size_t));
 
             // PL value
             size += SerialPostingList::BytesRequired(&(b->tuple.value));
@@ -229,8 +229,8 @@ struct SerialTuple
 
          // writing the key (string)
          SerialString::Write(buffer + offset, &b->tuple.key);
-         offset += keySize;
-         offset = RoundUp(offset, sizeof(size_t));
+         offset += keySize + 1;
+         //offset = RoundUp(offset, sizeof(size_t));
          t->valueOffset = offset;
          
          // writing the value (posting list)
@@ -291,14 +291,13 @@ class IndexBlob
 
          while (bucketStart < bucketEnd)
          {
-            if (!strcmp(curr->Key()->c_str(), key))
+             if (!strcmp(curr->Key()->c_str(), key))
             {
                return curr;
             } else {
                bucketStart += curr->getSize();
                curr = reinterpret_cast<SerialTuple*>((char *)this + bucketStart);
             }
-            
          }
 
          return nullptr; 

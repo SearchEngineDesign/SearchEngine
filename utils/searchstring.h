@@ -118,6 +118,10 @@ class string
          {
             return m_data;
          }
+      char *c_str_mod() const
+         {
+            return m_data;
+         }
       char *c_str()
          {
             return m_data;
