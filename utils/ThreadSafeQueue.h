@@ -36,7 +36,7 @@ class ThreadSafeQueue {
 
         T get() {
             pthread_mutex_lock(&mutex);
-            while (queue.empty() && !false)
+            while (queue.empty() && !kill)
                 pthread_cond_wait(&cond, &mutex); // Wait for an item to be available
             T item = queue.front();
             queue.pop();

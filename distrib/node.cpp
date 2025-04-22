@@ -121,7 +121,7 @@ void Node::crawl() {
             break;
         }
         //TODO uncomment
-        //crawlRobots(url.makeRobots(), url.Service + string("://") + url.Host, alpacino);
+        crawlRobots(url.makeRobots(), url.Service + string("://") + url.Host, alpacino);
     
         auto buffer = std::make_unique<char[]>(BUFFER_SIZE);
     
@@ -176,7 +176,7 @@ void Node::parse() {
     
         auto parser = std::make_unique<HtmlParser>(cResult.buffer.data(), cResult.pageSize);
         //TODO uncomment
-        //frontier.insert(parser->links);
+        frontier.insert(parser->links);
         parseResultsQueue.put(std::move(parser), false);
     }
 
@@ -188,6 +188,8 @@ void Node::index() {
 
      while (keepRunning) {
         auto pResult = parseResultsQueue.get();
+        if (!keepRunning)
+            break;
         if (pResult->base.size() != 0) {
             index.addDocument(*pResult);
         }
