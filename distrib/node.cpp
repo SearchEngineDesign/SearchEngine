@@ -23,6 +23,45 @@ Node::Node(const unsigned int id_in, const unsigned int numNodes):
     
 }
 
+void testindex(const char * CHUNK_DIR) {
+    const string tocrawl[13] = {
+        "https://bandcamp.com/",
+        "https://soundcloud.com/",
+        "https://rateyourmusic.com/",
+        "https://finance.yahoo.com/",
+        "https://www.yahoo.com/",
+        "https://www.google.com/",
+        "https://www.bing.com/",
+        "https://www.instagram.com/",
+        "https://www.marxists.org/english.htm",
+        "https://www.progarchives.com/",
+        "https://www.britannica.com/",
+        "https://www.ebay.com/",
+        "https://www.amazon.com/"
+    };
+    IndexWriteHandler iwh(CHUNK_DIR);
+    Crawler c;
+    for (auto i : tocrawl) {
+        auto url = ParsedUrl(i);
+        auto buffer = std::make_unique<char[]>(BUFFER_SIZE);
+        size_t pageSize = 0;
+        c.crawl(url, buffer.get(), pageSize);
+        crawlerResults cResult(url, buffer.get(), pageSize);
+        auto parser = std::make_unique<HtmlParser>(cResult.buffer.data(), cResult.pageSize);
+        iwh.addDocument(*parser);
+    }
+    string fname = iwh.getFilename();
+    iwh.WriteIndex();
+    auto t = iwh.index->getDict()->Find("word");
+    assert(t != nullptr);
+    auto t1 = iwh.index->getDict()->Find("start");
+    assert(t1 != nullptr);
+
+    IndexReadHandler ihr;
+    ihr.ReadIndex(fname.c_str());
+    ihr.TestIndex();
+}
+
 void Node::start(const char * seedlistPath, const char * bfPath) {
     std::cout << "Node " << id << " started." << std::endl;
 
@@ -82,7 +121,8 @@ void Node::crawl() {
             break;
         }
 
-        crawlRobots(url.makeRobots(), url.Service + string("://") + url.Host, alpacino);
+        //TODO: un-comment
+        //crawlRobots(url.makeRobots(), url.Service + string("://") + url.Host, alpacino);
     
         auto buffer = std::make_unique<char[]>(BUFFER_SIZE);
     
@@ -137,7 +177,8 @@ void Node::parse() {
     
         auto parser = std::make_unique<HtmlParser>(cResult.buffer.data(), cResult.pageSize);
 
-        frontier.insert(parser->links);
+        //TODO: un-comment
+        //frontier.insert(parser->links);
         parseResultsQueue.put(std::move(parser), true);
     }
 

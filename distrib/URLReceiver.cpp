@@ -135,7 +135,7 @@ void UrlReceiver::createServer() {
     }
     if (bind(server_fd, (struct sockaddr*)&address, sizeof(address)) < 0) {
         std::cerr << "Failed to bind socket" << std::endl;
-        throw std::runtime_error("Socket binding failed");
+        //throw std::runtime_error("Socket binding failed");
         // exit(EXIT_FAILURE);
     }
 

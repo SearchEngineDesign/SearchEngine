@@ -58,8 +58,8 @@ struct SerialString
 
       static size_t BytesRequired(const string &str) 
          {
-            // for chars
-            size_t size = (str.size() * sizeof(char)) + sizeof(uint8_t);
+            // for chars + nullterm
+            size_t size = (str.size() * sizeof(char)) + sizeof(uint8_t) + sizeof(char);
 
             return RoundUp(size, sizeof(size_t));
          }
@@ -68,6 +68,7 @@ struct SerialString
             SerialString* t = reinterpret_cast<SerialString*>(buffer);
             for ( size_t i = 0; i < str->size(); i++ )
                t->data[i] = *(str->at(i));
+            t->data[str->size()] = '\0';
          }
 
       const char *c_str() const {
@@ -207,7 +208,7 @@ struct SerialTuple
             size += sizeof(size_t) << 1;
 
             // string key
-            size += SerialString::BytesRequired(b->tuple.key) + 1;
+            size += SerialString::BytesRequired(b->tuple.key);
 
             //size = RoundUp(size, sizeof(size_t));
 
@@ -229,7 +230,7 @@ struct SerialTuple
 
          // writing the key (string)
          SerialString::Write(buffer + offset, &b->tuple.key);
-         offset += keySize + 1;
+         offset += keySize;
          //offset = RoundUp(offset, sizeof(size_t));
          t->valueOffset = offset;
          
@@ -238,6 +239,8 @@ struct SerialTuple
          SerialPostingList::Write(buffer + offset, valueSize, &(b->tuple.value));
          offset += valueSize;
          offset = RoundUp(offset, sizeof(size_t));
+
+         assert(strcmp(t->Key()->c_str(), b->tuple.key.c_str()) == 0);
 
          // finally, write the size
          t->size = offset;

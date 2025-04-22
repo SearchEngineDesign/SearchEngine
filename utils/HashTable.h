@@ -76,7 +76,7 @@ template< typename Key, typename Value > class HashTable
    public:
       static size_t hashbasic(const char *c, const size_t &mod) 
          {
-            int hash;
+            int hash = 0;
             while (*c)
                hash = (hash * 101) + *c++;
             return hash % mod;
