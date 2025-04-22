@@ -11,6 +11,8 @@
 #include <algorithm>
 
 static const size_t initialSize = 8192;
+const size_t fnvPrime = 1099511628211ul;
+const size_t fnvOffset = 146959810393466560ul;
 
 // You may add additional members or helper functions.
 
@@ -74,12 +76,15 @@ template< typename Key, typename Value > class HashTable
       char **optBufferRef;
 
    public:
-      static size_t hashbasic(const char *c, const size_t &mod) 
+      static size_t hashbasic(const char *c) 
          {
-            int hash = 0;
-            while (*c)
-               hash = (hash * 101) + *c++;
-            return hash % mod;
+            unsigned long hash = fnvOffset;
+            while (*c) {
+               hash *= fnvPrime;
+               hash ^= (*c);
+               c++;
+            }
+            return hash % initialSize;
          }
       size_t getKeyCount() const
          {
@@ -97,7 +102,7 @@ template< typename Key, typename Value > class HashTable
       Tuple< Key, Value > *Find( const Key k, const Value initialValue )
          {
 
-            size_t index = hashbasic(k.at(0), numberOfBuckets);
+            size_t index = hashbasic(k.at(0));
             Bucket< Key, Value > *curr = buckets[index];
             Bucket< Key, Value > *prev = curr;
             
@@ -119,7 +124,7 @@ template< typename Key, typename Value > class HashTable
 
       Tuple< Key, Value > *Find( const Key k ) const
          {
-            size_t index = hashbasic(k.at(0), numberOfBuckets);
+            size_t index = hashbasic(k.at(0));
             Bucket< Key, Value > *curr = buckets[index];
             
             while (curr != nullptr)

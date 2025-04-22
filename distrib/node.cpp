@@ -96,8 +96,8 @@ void Node::shutdown(bool writeFrontier) {
     if (keepRunning) {
         keepRunning = false;
         std::cout << frontier.size() << " items in frontier." << std::endl;
-        //frontier.startReturningEmpty();
         parseResultsQueue.stop();
+        //frontier.startReturningEmpty();
         //crawlResultsQueue.stop();
         if (writeFrontier)  
             frontier.writeFrontier(); 
@@ -120,8 +120,7 @@ void Node::crawl() {
             assert(keepRunning == false);
             break;
         }
-
-        //TODO: un-comment
+        //TODO uncomment
         //crawlRobots(url.makeRobots(), url.Service + string("://") + url.Host, alpacino);
     
         auto buffer = std::make_unique<char[]>(BUFFER_SIZE);
@@ -131,7 +130,7 @@ void Node::crawl() {
         try {
             alpacino.crawl(url, buffer.get(), pageSize);
             crawlerResults cResult(url, buffer.get(), pageSize);
-            crawlResultsQueue.put(cResult, true);
+            crawlResultsQueue.put(cResult, false);
         } catch (const std::runtime_error &e) {
             std::cerr << e.what() << std::endl;
         }
@@ -176,10 +175,9 @@ void Node::parse() {
         crawlerResults cResult = crawlResultsQueue.get();
     
         auto parser = std::make_unique<HtmlParser>(cResult.buffer.data(), cResult.pageSize);
-
-        //TODO: un-comment
+        //TODO uncomment
         //frontier.insert(parser->links);
-        parseResultsQueue.put(std::move(parser), true);
+        parseResultsQueue.put(std::move(parser), false);
     }
 
 }
@@ -191,7 +189,6 @@ void Node::index() {
      while (keepRunning) {
         auto pResult = parseResultsQueue.get();
         if (pResult->base.size() != 0) {
-            //std::cerr << "Indexed: " << pResult->base << std::endl;
             index.addDocument(*pResult);
         }
     }

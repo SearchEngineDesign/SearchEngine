@@ -240,8 +240,6 @@ struct SerialTuple
          offset += valueSize;
          offset = RoundUp(offset, sizeof(size_t));
 
-         assert(strcmp(t->Key()->c_str(), b->tuple.key.c_str()) == 0);
-
          // finally, write the size
          t->size = offset;
 
@@ -285,7 +283,7 @@ class IndexBlob
          // return nullptr.
 
          // Your code here.
-         size_t i = Hash::hashbasic(key, NumberOfBuckets) + DocumentsInIndex;
+         size_t i = Hash::hashbasic(key) + DocumentsInIndex;
          size_t bucketStart = offsets[i];
          SerialTuple *curr = reinterpret_cast<SerialTuple*>((char *)this + bucketStart);
 
@@ -499,7 +497,7 @@ class UrlBlob
          // ( key, value ) entry.  If the key is not found,
          // return nullptr.
 
-         size_t i = Hash::hashbasic(key, NumberOfBuckets);
+         size_t i = Hash::hashbasic(key);
          size_t bucketStart = offsets[i];
          SerialUrlTuple *curr = reinterpret_cast<SerialUrlTuple*>((char *)this + bucketStart);
 
@@ -575,7 +573,6 @@ class UrlBlob
          blob->keyCount = temp.getKeyCount();
          blob->chunkID = chunkID;
          blob->NumberOfBuckets = temp.size();
-
          for (int i = 0; i < temp.size(); i++)
          {
             blob->offsets[i] = offset;
