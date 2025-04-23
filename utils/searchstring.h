@@ -118,10 +118,6 @@ class string
          {
             return m_data;
          }
-      char *c_str_mod() const
-         {
-            return m_data;
-         }
       char *c_str()
          {
             return m_data;
@@ -560,8 +556,22 @@ class string
          return m_data;
       }
 
-      friend std::istream &operator>>( std::istream &is, string &s );
+      size_t npos() const
+      {
+         return -1;
+      }
 
+
+      int find_last_of(char ch) const {
+        for (size_t i = m_size; i > 0; --i) {
+            if (m_data[i - 1] == ch) {
+                return i - 1;
+            }
+        }
+        return static_cast<int>(-1); // cannot find, return -1
+      }
+
+      friend std::istream &operator>>( std::istream &is, string &s );
    private:
       size_t m_size;
       size_t m_capacity;

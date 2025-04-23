@@ -22,3 +22,6 @@
 [submodule "frontend"]
 	path = frontend
 	url = https://github.com/SearchEngineDesign/frontend.git
+[submodule "dynamicRanker"]
+	path = dynamicRanker
+	url = https://github.com/SearchEngineDesign/ranker

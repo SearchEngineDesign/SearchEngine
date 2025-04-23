@@ -1,4 +1,8 @@
 #include "node.h"
+#include <chrono>
+#include <thread>
+using namespace std::this_thread; // sleep_for, sleep_until
+using namespace std::chrono; // nanoseconds, system_clock, seconds
 
 
 void Node::handle_signal(int signal) {
@@ -89,7 +93,6 @@ void Node::start(const char * seedlistPath, const char * bfPath) {
     {
         tPool.submit(indexEntry, (void*) this);
     }
-
 }
 
 void Node::shutdown(bool writeFrontier) {
@@ -97,10 +100,10 @@ void Node::shutdown(bool writeFrontier) {
         keepRunning = false;
         std::cout << frontier.size() << " items in frontier." << std::endl;
         parseResultsQueue.stop();
-        //frontier.startReturningEmpty();
-        //crawlResultsQueue.stop();
         if (writeFrontier)  
             frontier.writeFrontier(); 
+        frontier.startReturningEmpty();
+        crawlResultsQueue.stop();
         std::cout << "Shutdown complete." << std::endl;
     }
 }
@@ -121,7 +124,7 @@ void Node::crawl() {
             break;
         }
         //TODO uncomment
-        //crawlRobots(url.makeRobots(), url.Service + string("://") + url.Host, alpacino);
+        crawlRobots(url.makeRobots(), url.Service + string("://") + url.Host, alpacino);
     
         auto buffer = std::make_unique<char[]>(BUFFER_SIZE);
     
@@ -176,7 +179,7 @@ void Node::parse() {
     
         auto parser = std::make_unique<HtmlParser>(cResult.buffer.data(), cResult.pageSize);
         //TODO uncomment
-        //frontier.insert(parser->links);
+        frontier.insert(parser->links);
         parseResultsQueue.put(std::move(parser), false);
     }
 
@@ -188,6 +191,8 @@ void Node::index() {
 
      while (keepRunning) {
         auto pResult = parseResultsQueue.get();
+        if (!keepRunning)
+            break;
         if (pResult->base.size() != 0) {
             index.addDocument(*pResult);
         }
