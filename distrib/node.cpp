@@ -1,4 +1,8 @@
 #include "node.h"
+#include <chrono>
+#include <thread>
+using namespace std::this_thread; // sleep_for, sleep_until
+using namespace std::chrono; // nanoseconds, system_clock, seconds
 
 
 void Node::handle_signal(int signal) {
@@ -89,7 +93,6 @@ void Node::start(const char * seedlistPath, const char * bfPath) {
     {
         tPool.submit(indexEntry, (void*) this);
     }
-
 }
 
 void Node::shutdown(bool writeFrontier) {
@@ -97,10 +100,10 @@ void Node::shutdown(bool writeFrontier) {
         keepRunning = false;
         std::cout << frontier.size() << " items in frontier." << std::endl;
         parseResultsQueue.stop();
-        //frontier.startReturningEmpty();
-        //crawlResultsQueue.stop();
         if (writeFrontier)  
             frontier.writeFrontier(); 
+        frontier.startReturningEmpty();
+        crawlResultsQueue.stop();
         std::cout << "Shutdown complete." << std::endl;
     }
 }

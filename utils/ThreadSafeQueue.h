@@ -38,6 +38,10 @@ class ThreadSafeQueue {
             pthread_mutex_lock(&mutex);
             while (queue.empty() && !kill)
                 pthread_cond_wait(&cond, &mutex); // Wait for an item to be available
+            if (kill) {
+                pthread_mutex_unlock(&mutex);
+                return T();
+            }
             T item = queue.front();
             queue.pop();
             pthread_mutex_unlock(&mutex);
@@ -51,23 +55,10 @@ class ThreadSafeQueue {
             return isEmpty;
         }
 
-        void emptyQueue() {
-            pthread_mutex_lock(&mutex);
-            std::queue<T>().swap(queue); // Clear the queue
-            pthread_mutex_unlock(&mutex);
-        }
-
         void stop() {
             kill = true;
             std::cout << "Freeing queue..." << std::endl;
             pthread_cond_broadcast(&cond);
-        }
-
-        void wait() {
-            pthread_mutex_lock(&mutex);
-            while (queue.size() > MAX_SIZE)
-                pthread_cond_wait(&cond, &mutex); 
-            pthread_mutex_unlock(&mutex);
         }
 
         ~ThreadSafeQueue() {
