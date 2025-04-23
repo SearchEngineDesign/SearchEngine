@@ -4,11 +4,12 @@
 process_name="search" # Replace with the actual process name
 memory_limit_mb=70000000 # Memory limit in MB
 sleep_interval=30 # Check interval in seconds
+reset_interval=300 
+
 
 cleanup() {
   echo "Terminating other processes..."
-  pkill -SIGINT "$process_name"
-  sleep 120
+  sleep $reset_interval
   pkill "$process_name"
   exit 0 # Exit the script after cleanup
 }
@@ -38,16 +39,20 @@ while true; do
 
   if (( $(echo "$current_memory_int > $memory_limit_mb" | bc -l) )); then
     echo "$(date) - Memory usage of '$process_name' is $current_memory_usage MB, exceeding limit of $memory_limit_mb MB. Restarting..."
+
     pkill -SIGINT "$process_name"
-    sleep 120
+    sleep $reset_interval
     pkill "$process_name"
+
     nohup ./run_script.sh & > nohup.out
     echo "$(date) - Process '$process_name' restarted."
   elif [ "$current_memory_int" = "$old_memory_int" ]; then
     echo "$(date) - '$process_name' stalled. Restarting..."
+
     pkill -SIGINT "$process_name"
-    sleep 120
+    sleep $reset_interval
     pkill "$process_name"
+
     nohup ./run_script.sh & > nohup.out
     echo "$(date) - Process '$process_name' restarted."
   else
