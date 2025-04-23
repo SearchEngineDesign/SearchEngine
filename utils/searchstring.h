@@ -118,10 +118,6 @@ class string
          {
             return m_data;
          }
-      char *c_str_mod() const
-         {
-            return m_data;
-         }
       char *c_str()
          {
             return m_data;
@@ -566,13 +562,13 @@ class string
       }
 
 
-      size_t find_last_of(char ch) const {
+      int find_last_of(char ch) const {
         for (size_t i = m_size; i > 0; --i) {
             if (m_data[i - 1] == ch) {
                 return i - 1;
             }
         }
-        return static_cast<size_t>(-1); // cannot find, return -1
+        return static_cast<int>(-1); // cannot find, return -1
       }
 
       friend std::istream &operator>>( std::istream &is, string &s );
