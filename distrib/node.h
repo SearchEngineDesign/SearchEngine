@@ -89,7 +89,6 @@ class Node {
     std::atomic<bool> keepRunning;
 
     ThreadSafeFrontier frontier;
-    // IndexWriteHandler indexHandler;
     ThreadSafeQueue<crawlerResults> crawlResultsQueue;
     ThreadSafeQueue<std::shared_ptr<HtmlParser>> parseResultsQueue;
 
