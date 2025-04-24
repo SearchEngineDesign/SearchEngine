@@ -5,6 +5,7 @@ from data_loader import RankingDataLoader
 import argparse
 import os
 import matplotlib.pyplot as plt
+
 def train_model(
    model: RankNet,
    train_data: list,
@@ -66,7 +67,7 @@ def train_model(
       print(f"Epoch {epoch + 1}/{num_epochs}, Average Loss: {avg_loss:.4f}")
       
       scheduler.step(avg_loss)
-      plot_losses(losses, epoch)
+      # plot_losses(losses, epoch)
       ndcg, accuracy, acc, _ = evaluate_model(model, test_data)
       print(f"Epoch {epoch + 1}/{num_epochs}, NDCG@{model.k} score: {ndcg:.4f}, Accuracy@{model.k} score: {accuracy:.4f}, Acc@{model.k} score: {acc:.4f}")
 
@@ -96,7 +97,7 @@ def evaluate_model(
       for doc_features, reference_ranks, doc_ids in test_data:
          # Compute loss/NDCG
          loss = model.compute_ranking_loss(doc_features, reference_ranks)
-         ndcg = 1 - loss.item()  # Convert loss back to NDCG
+         ndcg = 1 - loss.item()
          total_ndcg += ndcg
          
          # Get predictions
@@ -128,7 +129,7 @@ def main():
    parser = argparse.ArgumentParser(description='Train and evaluate RankNet model')
    parser.add_argument('--input_file', type=str, default='data/train.json', help='Path to input JSON file')
    parser.add_argument('--output_dir', type=str, default='outputs', help='Directory to save outputs')
-   parser.add_argument('--num_epochs', type=int, default=5, help='Number of training epochs')
+   parser.add_argument('--num_epochs', type=int, default=3, help='Number of training epochs')
    parser.add_argument('--learning_rate', type=float, default=0.0001, help='Learning rate')
    parser.add_argument('--batch_size', type=int, default=32, help='Batch size')
    parser.add_argument('--k', type=int, default=10, help='Number of top documents to consider')
@@ -187,6 +188,27 @@ def main():
    print(f"NDCG@{args.k} score: {ndcg_score:.4f}")
    print(f"Accuracy@{args.k} score: {accuracy:.4f}")
    print(f"Acc@{args.k} score: {acc:.4f}")
+   
+   # Save the model in ONNX format
+   # Create a dummy input with the same shape as the model expects
+   dummy_input = torch.randn(1, num_docs, num_features)  # batch_size=1, num_docs, num_features
+   
+   onnx_path = os.path.join(args.output_dir, 'rank_model.onnx')
+   torch.onnx.export(
+      model,
+      dummy_input,
+      onnx_path,
+      export_params=True,
+      opset_version=11,
+      do_constant_folding=True,
+      input_names=['input'],
+      output_names=['output'],
+      dynamic_axes={
+         'input': {0: 'batch_size', 1: 'num_docs'},  # batch and doc dimensions are dynamic
+         'output': {0: 'batch_size', 1: 'num_docs'}
+      }
+   )
+   print(f"Model saved in ONNX format to {onnx_path}")
    
    # # Save predictions
    # train_predictions = []
