@@ -11,7 +11,6 @@
 #include "../frontier/ReaderWriterLock.h"
 
 
-namespace cf {
 
 class Crypto {
     
@@ -81,5 +80,3 @@ class Crypto {
         }
 
 };
-
-}

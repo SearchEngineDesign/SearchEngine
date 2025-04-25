@@ -18,8 +18,6 @@
 #define duration(a) std::chrono::duration_cast<std::chrono::seconds>(a).count()
 using TimeVar = std::chrono::high_resolution_clock::time_point;
 
-using cf::string;
-using cf::vector;
 using cf::ThreadSafeQueue;
 
 struct crawlerResults {

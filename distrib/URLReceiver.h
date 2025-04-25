@@ -11,7 +11,6 @@
 
 class ThreadSafeFrontier;
 
-using cf::string;
 class UrlReceiver {
 
     private:

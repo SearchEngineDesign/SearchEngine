@@ -24,7 +24,7 @@ endif
 
 all: search
 
-search: runner.cpp parser/HtmlParser.cpp parser/HtmlTags.cpp Crawler/crawler.cpp utils/searchstring.cpp index/index.cpp utils/Utf8.cpp distrib/node.cpp distrib/URLReceiver.cpp index/stemmer/stemmer.cpp utils/IndexBlob.cpp
+search: runner.cpp parser/HtmlParser.cpp parser/HtmlTags.cpp Crawler/crawler.cpp index/index.cpp distrib/node.cpp distrib/URLReceiver.cpp index/stemmer/stemmer.cpp
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ $(LDFLAGS) $(RPATH_FLAG) -lutf8proc -lssl -lcrypto -lz -o search -g
 ifeq ($(UNAME_S),Darwin)
 

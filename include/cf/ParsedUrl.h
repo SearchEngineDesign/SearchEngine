@@ -3,7 +3,6 @@
 
 #include <cf/searchstring.h>
 
-namespace cf {
 
 class ParsedUrl {
     public:
@@ -78,5 +77,3 @@ class ParsedUrl {
             // No manual memory management required with string
         }
     };
-
-}

@@ -19,19 +19,11 @@
 #include <unistd.h>
 #include <sys/mman.h>
 
-#include "HashTable.h"
-#include "searchstring.h"
-#include "vec.h"
+#include "../../index/index.h"
 
-
-
-using cf::HashTable;
-using cf::Bucket;
-using cf::Tuple;
-
-using Hash = HashTable< string, PostingList >;
-using Pair = Tuple< string, PostingList >;
-using HashBucket = Bucket< string, PostingList >;
+#include <cf/HashTable.h>
+#include <cf/searchstring.h>
+#include <cf/vec.h>
 
 
 
@@ -39,6 +31,13 @@ using HashBucket = Bucket< string, PostingList >;
 class Index;
 class PostingList;
 class Post;
+
+
+
+
+using Hash = HashTable< string, PostingList >;
+using Pair = Tuple< string, PostingList >;
+using HashBucket = Bucket< string, PostingList >;
 
 static const size_t Unknown = 0;
 

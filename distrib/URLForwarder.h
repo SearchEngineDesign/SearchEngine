@@ -18,8 +18,6 @@
 
 #include <cf/threading/ThreadPool.h>
 
-using cf::Crypto;
-using cf::vector;
 class UrlForwarder {
     private:
 
@@ -114,7 +112,7 @@ class UrlForwarder {
             if (send(sockfd, &len, sizeof(len), 0) != 0) {
                 std::cerr << "Error sending length to node " << id << std::endl;
                 close(sockfd);
-                delete arg;
+                delete args;
                 return;
             }
 
@@ -123,7 +121,7 @@ class UrlForwarder {
                 std::cerr << "Error sending data to node " << id << std::endl;
             } 
 
-            delete arg;
+            delete args;
             close(sockfd);
         }
 

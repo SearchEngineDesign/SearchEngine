@@ -1,9 +1,9 @@
 // Utf8.cpp
 
 // This file implements Utf8 library functions.
-
-
 #include "Utf8.h"
+
+
 #include <iostream>
 size_t SizeOfUtf8( Unicode c )
    {
