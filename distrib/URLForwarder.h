@@ -65,6 +65,7 @@ class UrlForwarder {
                 tPool.submit(sendBatch, (void *) sendBatchArgs);
                 
                 urlQueues[id].clear();
+                urlQueues[id].reserve(BATCH_SIZE);
             }
 
         }
