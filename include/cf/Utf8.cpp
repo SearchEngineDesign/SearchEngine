@@ -184,7 +184,7 @@ size_t GetCustomUtf8( const Utf8 *p ) {
    try {
       indicatedLength = IndicatedLength(p); 
    } catch (const std::runtime_error& e) {
-      std::cout << "Caught an exception: " << e.what() << std::endl;
+      throw e;
    }
 
    if( indicatedLength == 0 || indicatedLength > 6 )
