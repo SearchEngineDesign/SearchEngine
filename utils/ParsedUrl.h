@@ -21,7 +21,6 @@ class ParsedUrl {
             const char *colon = ":";
             const char *slash = "/";
             int colonPos = url.find(colon);
-            int slashPos = url.find(slash, colonPos + 2);
     
             if (colonPos != -1) {
                 // Extract Service
