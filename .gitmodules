@@ -26,3 +26,6 @@
 [submodule "dynamicRanker"]
 	path = dynamicRanker
 	url = https://github.com/SearchEngineDesign/ranker
+[submodule "include/cf/threading"]
+	path = include/cf/threading
+	url = git@github.com:SearchEngineDesign/threading.git

@@ -133,7 +133,7 @@ void Node::crawl() {
         try {
             alpacino.crawl(url, buffer.get(), pageSize);
             crawlerResults cResult(url, buffer.get(), pageSize);
-            crawlResultsQueue.put(cResult, false);
+            crawlResultsQueue.put(std::move(cResult), false);
         } catch (const std::runtime_error &e) {
             std::cerr << e.what() << std::endl;
         }
