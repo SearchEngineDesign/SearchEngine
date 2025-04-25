@@ -1,22 +1,26 @@
 #pragma once
 
-#include "../utils/vector.h"
+#include <atomic>
+#include <csignal>
+#include <cf/threading/ThreadPool.h>
+
 #include "../frontier/BloomFilter.h"
 #include "../frontier/frontier.h"
-#include "../threading/ThreadPool.h"
-#include "../utils/ThreadSafeQueue.h"
 #include "../index/index.h"
 #include "../Crawler/crawler.h"
+
+#include <cf/vec.h>
+#include <cf/searchstring.h>
 
 #include <chrono>
 #include <fstream>
 #define timeNow() std::chrono::high_resolution_clock::now()
 #define duration(a) std::chrono::duration_cast<std::chrono::seconds>(a).count()
-typedef std::chrono::high_resolution_clock::time_point TimeVar;
+using TimeVar = std::chrono::high_resolution_clock::time_point;
 
-#include <atomic>
-
-#include <csignal>
+using cf::string;
+using cf::vector;
+using cf::ThreadSafeQueue;
 
 struct crawlerResults {
     ParsedUrl url;

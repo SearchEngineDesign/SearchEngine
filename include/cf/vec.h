@@ -6,6 +6,8 @@
 #include <initializer_list>
 #include <iostream>
 
+namespace cf {
+
 template<typename T>
    class vector
    {
@@ -342,3 +344,5 @@ template<typename T>
       T* arr = nullptr;
 
    };
+
+}

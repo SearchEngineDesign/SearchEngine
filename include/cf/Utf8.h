@@ -12,6 +12,9 @@
 #include <cstddef>
 #include <cstdint>
 
+
+namespace cf {
+
 typedef uint16_t Unicode;
 typedef uint8_t  Utf8;
 
@@ -145,3 +148,5 @@ size_t GetCustomUtf8( const Utf8 *p );
 // bool IsPunctuation( Unicode c );
 // bool IsSpace( Unicode c );
 // bool IsControl( Unicode c );
+
+}

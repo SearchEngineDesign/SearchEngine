@@ -3,21 +3,24 @@
 #include <openssl/evp.h>
 #include <openssl/sha.h>
 #include <utility>
-#include "../utils/searchstring.h"
+// #include "../utils/searchstring.h"
+#include <cf/searchstring.h>
+
 #include <cassert>
 
 #include "../frontier/ReaderWriterLock.h"
 
 
+namespace cf {
+
 class Crypto {
     
     private:
-      EVP_MD_CTX* ctx = nullptr;
+        EVP_MD_CTX* ctx = nullptr;
         ReaderWriterLock lock;
     public:
 
     Crypto() {
-        // std::cout << "make crpypto ctx from " << caller << std::endl;
         ctx = EVP_MD_CTX_new();
     }
 
@@ -78,3 +81,5 @@ class Crypto {
         }
 
 };
+
+}

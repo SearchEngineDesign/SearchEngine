@@ -1,7 +1,9 @@
 #pragma once
-// #include "utils/searchstring.h"
-// #include <string>
-#include "../utils/searchstring.h"
+
+
+#include <cf/searchstring.h>
+
+namespace cf {
 
 class ParsedUrl {
     public:
@@ -77,3 +79,5 @@ class ParsedUrl {
             // No manual memory management required with string
         }
     };
+
+}

@@ -1,6 +1,6 @@
 
-#include "../utils/ParsedUrl.h"
-#include "../utils/searchstring.h"
+#include <cf/searchstring.h>
+#include <cf/ParsedUrl.h>
 #include <cmath>
 
 

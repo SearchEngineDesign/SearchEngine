@@ -5,22 +5,18 @@
 #include "pthread.h"
 #include <iostream>
 
-#include <unistd.h>
 
-
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-
-#include "../utils/searchstring.h"
+#include <cf/searchstring.h>
+#include <cf/server/tcpserver.h>
 
 class ThreadSafeFrontier;
 
+using cf::string;
 class UrlReceiver {
 
     private:
 
-    static const uint32_t CHUNK_SIZE = 1024;
+    static const uint32_t CHUNK_SIZE = 1024 * 4;
 
     size_t id;
     uint16_t port;
@@ -30,21 +26,12 @@ class UrlReceiver {
     pthread_t thread;
     std::atomic<bool> listenFlag;
 
-
-    // --- networking variables
-
-    int server_fd;
-    sockaddr_in address;
-    socklen_t addrlen;
+    TCPServer server;
 
 
-    string parseUrls(char * buffer);
+    string parseUrls(const char *buffer);
 
-
-    
     void listener();
-    
-    void createServer();
     
 
     public: 

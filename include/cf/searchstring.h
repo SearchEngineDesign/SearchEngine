@@ -8,6 +8,8 @@
 #include <unistd.h>
 #include <cstring>
 
+namespace cf {
+
 class string
    {
    public:  
@@ -579,3 +581,5 @@ class string
    };
 
 std::ostream &operator<<( std::ostream &os, const string &s );
+
+}
