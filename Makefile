@@ -22,9 +22,11 @@ else
 	endif
 endif
 
+SRC_FILES := $(shell find ./ ! -name "rank.cpp" ! -name "test.cpp" ! -name "server.cpp" ! -name "testQueryCompiler.cpp" -name "*.cpp")
+
 all: search
 
-search: runner.cpp parser/HtmlParser.cpp parser/HtmlTags.cpp Crawler/crawler.cpp index/index.cpp distrib/node.cpp distrib/URLReceiver.cpp index/stemmer/stemmer.cpp
+search: $(SRC_FILES)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ $(LDFLAGS) $(RPATH_FLAG) -lutf8proc -lssl -lcrypto -lz -o search -g
 ifeq ($(UNAME_S),Darwin)
 

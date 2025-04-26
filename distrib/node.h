@@ -11,6 +11,7 @@
 
 #include <cf/vec.h>
 #include <cf/searchstring.h>
+#include <cf/ThreadSafeQueue.h>
 
 #include <chrono>
 #include <fstream>
@@ -18,7 +19,6 @@
 #define duration(a) std::chrono::duration_cast<std::chrono::seconds>(a).count()
 using TimeVar = std::chrono::high_resolution_clock::time_point;
 
-using cf::ThreadSafeQueue;
 
 struct crawlerResults {
     ParsedUrl url;
@@ -91,8 +91,8 @@ class Node {
     std::atomic<bool> keepRunning;
 
     ThreadSafeFrontier frontier;
-    ThreadSafeQueue<crawlerResults> crawlResultsQueue;
-    ThreadSafeQueue<std::shared_ptr<HtmlParser>> parseResultsQueue;
+    cf::ThreadSafeQueue<crawlerResults> crawlResultsQueue;
+    cf::ThreadSafeQueue<std::shared_ptr<HtmlParser>> parseResultsQueue;
 
     std::shared_ptr<UrlReceiver> urlReceiver = nullptr;  
 
