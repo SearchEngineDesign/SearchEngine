@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -std=c++17 -g -Iinclude
+CXXFLAGS = -std=c++17 -g -Iinclude -I/opt/homebrew/opt/openssl@3/include
 
 ifeq ($(OS),Windows_NT)
 	OPENSSL_DIR = /usr/include/openssl
