@@ -1,0 +1,30 @@
+cd searchengine/frontend && ./run_indexserver.sh
+
+find . -type f -size -70k -delete
+
+rm -r $(ls -A | grep -v log )
+
+nohup ./server_manager.sh & > nohup.out && tail -f nohup.out 
+
+pkill -f server_manager.sh
+
+fuser -k 8080/tcp
+
+ln -s /home/tkmaher/searchengine/dynamicRanker/onnxruntime-linux-x64-gpu-1.21.1/lib/libonnxruntime.so.1 /home/tkmaher/searchengine/dynamicRanker/onnxruntime-linux-x64-gpu-1.21.1/lib/libonnxruntime.so
+
+to start a server:
+    1. cd frontend
+    2. ./run_server.sh
+    3. if it doesn't connect, edit the IP addresses to reflect the IPs in the google cloud VM list
+
+to start an indexserver:
+    1. ssh into vm 
+        eg gcloud compute ssh --zone "us-central1-a" "realsearchclone4-20250425-144724" --project "decent-decker-456116-p8"
+    2. cd searchengine/frontend
+    3. ./run_indexserver.sh
+    4. if it doesn't compile, make clean and try again
+
+to update virtualmachines:
+    1. go to ./searchengine
+    2. run update_vms.sh
+    3. modify ./* in update_vms.sh to select for a specific folder
