@@ -5,3 +5,4 @@ log/
 perf.*
 .env/
 .run_script.sh
+search
