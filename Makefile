@@ -22,7 +22,7 @@ else
 	endif
 endif
 
-SRC_FILES := $(shell find ./ ! -name "rank.cpp" ! -name "test.cpp" ! -name "server.cpp" ! -name "testQueryCompiler.cpp" -name "*.cpp")
+SRC_FILES := $(shell find ./ ! -name "rank.cpp" ! -name "test.cpp" ! -name "constructDataset.cpp" ! -name "indexserver.cpp" ! -name "server.cpp" ! -name "testQueryCompiler.cpp" -name "*.cpp")
 
 all: search
 
