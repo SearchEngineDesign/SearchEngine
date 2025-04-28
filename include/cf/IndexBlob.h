@@ -295,7 +295,10 @@ class IndexBlob
          SerialTuple *curr = reinterpret_cast<SerialTuple*>((char *)this + bucketStart);
 
          size_t bucketEnd;
-         (i == NumberOfBuckets - 1) ? bucketEnd = BlobSize : bucketEnd = offsets[i+1];
+         if (i >= NumberOfBuckets - 1)
+            bucketEnd = BlobSize;
+         else
+            bucketEnd = offsets[i+1];
 
          while (bucketStart < bucketEnd)
          {
