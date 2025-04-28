@@ -13,7 +13,9 @@ void handle_signal(int signal) {
 
 
 int main(int argc, char * argv[]) {
-
+    IndexReadHandler rh;
+    rh.ReadIndex("./log/chunks/53");
+    rh.Find("query");
     // setup sigpipe handler
     struct sigaction sa;
     sa.sa_handler = SIG_IGN;

@@ -6,3 +6,5 @@ perf.*
 .env/
 .run_script.sh
 search
+utils
+search.dSYM

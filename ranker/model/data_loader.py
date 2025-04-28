@@ -28,7 +28,7 @@ class RankingDataLoader:
       {
          "queries": [
                {
-                  "query_id": "1",
+                  "query": "1",
                   "documents": [
                      {
                            "doc_id": "1",
@@ -52,13 +52,19 @@ class RankingDataLoader:
       with open(self.file_path, 'r') as f:
          train_data = json.load(f)
       
-      # Load test data
-      with open('data/test_data.json', 'r') as f:
-         test_data = json.load(f)
+      # # Load test data
+      # with open('data/test_data.json', 'r') as f:
+      #    test_data = json.load(f)
+      train_data, test_data = train_test_split(train_data['queries'], test_size=self.test_size, random_state=self.random_state)
       
+      with open('data/train_data.json', 'w') as f:
+         json.dump(train_data, f, indent=2)
+      with open('data/test_data.json', 'w') as f:
+         json.dump(test_data, f, indent=2)
+      # breakpoint()
       # Process train data
       train_queries_data = []
-      for query in train_data['queries']:
+      for query in train_data:
          features = []
          ranks = []
          doc_ids = []
@@ -66,14 +72,14 @@ class RankingDataLoader:
          for doc in query['documents']:
             features.append(doc['features'])
             ranks.append(doc['rank'])
-            doc_ids.append(doc['doc_id'])
+            doc_ids.append(doc['doc_url'])
          
          doc_features = torch.tensor(features, dtype=torch.float32)
          train_queries_data.append((doc_features, ranks, doc_ids))
       
       # Process test data
       test_queries_data = []
-      for query in test_data['queries']:
+      for query in test_data:
          features = []
          ranks = []
          doc_ids = []
@@ -81,7 +87,7 @@ class RankingDataLoader:
          for doc in query['documents']:
             features.append(doc['features'])
             ranks.append(doc['rank'])
-            doc_ids.append(doc['doc_id'])
+            doc_ids.append(doc['doc_url'])
          
          doc_features = torch.tensor(features, dtype=torch.float32)
          test_queries_data.append((doc_features, ranks, doc_ids))
@@ -107,10 +113,10 @@ class RankingDataLoader:
       
       # Add predictions to the data
       for i, (_, _, doc_ids) in enumerate(data_split):
-         query_id = data['queries'][i]['query_id']
+         query_id = data['queries'][i]['query']
          # Find the query in the original data
          for query in data['queries']:
-               if query['query_id'] == query_id:
+               if query['query'] == query_id:
                   query['predictions'] = predictions[i]
                   break
       
@@ -141,7 +147,7 @@ class RankingDataLoader:
       
       for i in range(1, num_queries + 1):  # Start from 1
          query = {
-               "query_id": str(i),  # Convert to string for JSON
+               "query": str(i),  # Convert to string for JSON
                "documents": []
          }
          
@@ -157,7 +163,7 @@ class RankingDataLoader:
          # Create documents
          for j in range(1, num_docs_per_query + 1):  # Start from 1
                doc = {
-                  "doc_id": str(j),  # Convert to string for JSON
+                  "doc_url": str(j),  # Convert to string for JSON
                   "features": features[j-1].tolist(),
                   "rank": ranks[j-1]
                }

@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -std=c++17 -g -Iinclude
+CXXFLAGS = -std=c++17 -g -Iinclude -I/opt/homebrew/opt/openssl@3/include
 
 ifeq ($(OS),Windows_NT)
 	OPENSSL_DIR = /usr/include/openssl
@@ -22,7 +22,7 @@ else
 	endif
 endif
 
-SRC_FILES := $(shell find ./ ! -name "rank.cpp" ! -name "test.cpp" ! -name "server.cpp" ! -name "testQueryCompiler.cpp" -name "*.cpp")
+SRC_FILES := $(shell find ./ ! -name "rank.cpp" ! -name "test.cpp" ! -name "constructDataset.cpp" ! -name "indexserver.cpp" ! -name "server.cpp" ! -name "testQueryCompiler.cpp" -name "*.cpp")
 
 all: search
 

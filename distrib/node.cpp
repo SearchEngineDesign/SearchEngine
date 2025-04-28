@@ -63,7 +63,6 @@ void testindex(const char * CHUNK_DIR) {
 
     IndexReadHandler ihr;
     ihr.ReadIndex(fname.c_str());
-    ihr.TestIndex();
 }
 
 void Node::start(const char * seedlistPath, const char * bfPath) {

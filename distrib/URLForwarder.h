@@ -21,7 +21,7 @@
 class UrlForwarder {
     private:
 
-        static constexpr int BATCH_SIZE = 100;
+        static constexpr int BATCH_SIZE = 1000;
 
         size_t numNodes;
         size_t selfId;
@@ -91,10 +91,10 @@ class UrlForwarder {
             serv_addr.sin_family = AF_INET;
             serv_addr.sin_port = htons(port);
             inet_pton(AF_INET, ip.c_str(), &serv_addr.sin_addr);
-        
+            std::cerr << "Sending batch to node " << id << " at addr " << ip << std::endl;
             if (connect(sockfd, (sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) {
                 // Handle error
-                //std::cerr << "Error connecting to node " << id << std::endl;
+                std::cerr << "Error connecting to node " << id << std::endl;
                 close(sockfd);
                 return;
             }
