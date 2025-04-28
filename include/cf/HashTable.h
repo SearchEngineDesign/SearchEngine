@@ -19,6 +19,8 @@ const size_t fnvOffset = 146959810393466560ul;
 
 // Compare C-strings, return true if they are the same.
 
+
+
 template< typename Key, typename Value > class Tuple
    {
    public:
@@ -354,3 +356,4 @@ template< typename Key, typename Value > class HashTable
             return Iterator(this, numberOfBuckets, buckets[numberOfBuckets]);
          }
    };
+

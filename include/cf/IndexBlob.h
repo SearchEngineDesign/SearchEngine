@@ -19,18 +19,25 @@
 #include <unistd.h>
 #include <sys/mman.h>
 
-#include "HashTable.h"
-#include "string.h"
-#include "vector.h"
+#include "../../index/index.h"
+
+#include <cf/HashTable.h>
+#include <cf/searchstring.h>
+#include <cf/vec.h>
+
+
+
+
+class Index;
+class PostingList;
+class Post;
+
+
 
 
 using Hash = HashTable< string, PostingList >;
 using Pair = Tuple< string, PostingList >;
 using HashBucket = Bucket< string, PostingList >;
-
-class Index;
-class PostingList;
-class Post;
 
 static const size_t Unknown = 0;
 
@@ -64,7 +71,7 @@ struct SerialString
             return RoundUp(size, sizeof(size_t));
          }
 
-      static void *Write( char *buffer, const string *str ) {
+      static void Write( char *buffer, const string *str ) {
             SerialString* t = reinterpret_cast<SerialString*>(buffer);
             for ( size_t i = 0; i < str->size(); i++ )
                t->data[i] = *(str->at(i));
@@ -136,7 +143,7 @@ struct SerialPostingList
          }
          
 
-      static void *Write( char *buffer, size_t len,
+      static void Write( char *buffer, size_t len,
          const PostingList *p ) {
             size_t offset = 0;
             SerialPostingList* t = reinterpret_cast<SerialPostingList*>(buffer);
@@ -221,7 +228,7 @@ struct SerialTuple
       // Write the HashBucket out as a SerialTuple in the buffer,
       // returning a pointer to one past the last character written.
 
-      static void *Write( char *buffer, size_t len,
+      static void Write( char *buffer, size_t len,
             const HashBucket *b )
          {
          SerialTuple* t = reinterpret_cast<SerialTuple*>(buffer);
@@ -288,7 +295,10 @@ class IndexBlob
          SerialTuple *curr = reinterpret_cast<SerialTuple*>((char *)this + bucketStart);
 
          size_t bucketEnd;
-         (i == NumberOfBuckets - 1) ? bucketEnd = BlobSize : bucketEnd = offsets[i+1];
+         if (i >= NumberOfBuckets - 1)
+            bucketEnd = BlobSize;
+         else
+            bucketEnd = offsets[i+1];
 
          while (bucketStart < bucketEnd)
          {
@@ -441,7 +451,7 @@ struct SerialUrlTuple
       // Write the HashBucket out as a SerialUrlTuple in the buffer,
       // returning a pointer to one past the last character written.
 
-      static void *Write( char *buffer, size_t len,
+      static void Write( char *buffer, size_t len,
             const Bucket<string, int> *b )
          {
          SerialUrlTuple* t = reinterpret_cast<SerialUrlTuple*>(buffer);

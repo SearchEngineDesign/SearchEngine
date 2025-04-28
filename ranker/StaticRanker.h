@@ -1,8 +1,7 @@
-
-#include "../utils/ParsedUrl.h"
-#include "../utils/searchstring.h"
+#pragma once
+#include <cf/searchstring.h>
+#include <cf/ParsedUrl.h>
 #include <cmath>
-
 
 
 enum TopLevelDomains {

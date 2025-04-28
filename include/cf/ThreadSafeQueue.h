@@ -5,6 +5,7 @@
 
 #include <pthread.h>
 
+namespace cf {
 
 template<typename T> 
 class ThreadSafeQueue {
@@ -70,6 +71,8 @@ class ThreadSafeQueue {
             return queue.size();
         }
 };
+
+}
 
 
 

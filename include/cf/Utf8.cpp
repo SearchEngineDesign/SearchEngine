@@ -1,9 +1,9 @@
 // Utf8.cpp
 
 // This file implements Utf8 library functions.
-
-
 #include "Utf8.h"
+
+
 #include <iostream>
 size_t SizeOfUtf8( Unicode c )
    {
@@ -184,7 +184,7 @@ size_t GetCustomUtf8( const Utf8 *p ) {
    try {
       indicatedLength = IndicatedLength(p); 
    } catch (const std::runtime_error& e) {
-      std::cout << "Caught an exception: " << e.what() << std::endl;
+      throw e;
    }
 
    if( indicatedLength == 0 || indicatedLength > 6 )

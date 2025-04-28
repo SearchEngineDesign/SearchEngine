@@ -8,7 +8,8 @@
 	path = frontier
 	url = git@github.com:SearchEngineDesign/frontier.git
 [submodule "threading"]
-	path = threading
+	path = include/cf/threading
+	# url = https://github.com/SearchEngineDesign/threading.git
 	url = git@github.com:SearchEngineDesign/threading.git
 [submodule "index"]
 	path = index
@@ -25,3 +26,6 @@
 [submodule "dynamicRanker"]
 	path = dynamicRanker
 	url = https://github.com/SearchEngineDesign/ranker
+[submodule "include/cf/threading"]
+	path = include/cf/threading
+	url = git@github.com:SearchEngineDesign/threading.git

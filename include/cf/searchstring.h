@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <cstring>
 
+
 class string
    {
    public:  
@@ -18,7 +19,6 @@ class string
       // EFFECTS: Creates an empty string
       string( ) : m_size( 0 ), m_capacity( 1 ), m_data( new char[ 1 ] )
          {
-            m_data = new char[1];
             *m_data = '\0';
          }
 
@@ -82,17 +82,16 @@ class string
             }
          }
       
-      // string constructor with length
+      // string reserve constructor
       // REQUIRES: Nothing
       // MODIFIES: *this
-      // EFFECTS: Creates a string with length
+      // EFFECTS: Creates a string with length reserved
       string( size_t length )
          {
-
-            m_size = length;
-            m_capacity = m_size + 1;
+            m_size = 0;
+            m_capacity = length;
             m_data = new char[ m_capacity ];
-            *(m_data + m_size) = '\0';
+            m_data[0] = '\0';
          }
 
 
@@ -267,7 +266,7 @@ class string
       // EFFECTS: Appends c to the string
       void push_back( char c )
          {
-            if ( m_size == m_capacity - 1 )
+            if ( m_size >= m_capacity - 1 )
             {
                m_capacity *= 2;
                char* new_data = new char[m_capacity];
@@ -275,8 +274,8 @@ class string
                delete[] m_data;
                m_data = new_data;
             }
-            *(m_data + m_size++) = c;
-            *(m_data + m_size) = '\0';
+            m_data[m_size++] = c;
+            m_data[m_size] = '\0';
          }
 
       // Pop Back

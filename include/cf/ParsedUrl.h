@@ -1,7 +1,8 @@
 #pragma once
-// #include "utils/searchstring.h"
-// #include <string>
-#include "../utils/searchstring.h"
+
+
+#include <cf/searchstring.h>
+
 
 class ParsedUrl {
     public:
@@ -21,7 +22,6 @@ class ParsedUrl {
             const char *colon = ":";
             const char *slash = "/";
             int colonPos = url.find(colon);
-            int slashPos = url.find(slash, colonPos + 2);
     
             if (colonPos != -1) {
                 // Extract Service

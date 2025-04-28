@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -std=c++17 -g
+CXXFLAGS = -std=c++17 -g -Iinclude -I/opt/homebrew/opt/openssl@3/include
 
 ifeq ($(OS),Windows_NT)
 	OPENSSL_DIR = /usr/include/openssl
@@ -22,9 +22,11 @@ else
 	endif
 endif
 
+SRC_FILES := $(shell find ./ ! -name "rank.cpp" ! -name "test.cpp" ! -name "server.cpp" ! -name "testQueryCompiler.cpp" -name "*.cpp")
+
 all: search
 
-search: runner.cpp parser/HtmlParser.cpp parser/HtmlTags.cpp Crawler/crawler.cpp utils/searchstring.cpp index/index.cpp utils/Utf8.cpp distrib/node.cpp distrib/URLReceiver.cpp index/stemmer/stemmer.cpp 
+search: $(SRC_FILES)
 	$(CXX) $(CXXFLAGS) $(INCLUDES) $^ $(LDFLAGS) $(RPATH_FLAG) -lutf8proc -lssl -lcrypto -lz -o search -g
 ifeq ($(UNAME_S),Darwin)
 

@@ -1,22 +1,24 @@
 #pragma once
 
-#include "../utils/vector.h"
+#include <atomic>
+#include <csignal>
+#include <cf/threading/ThreadPool.h>
+
 #include "../frontier/BloomFilter.h"
 #include "../frontier/frontier.h"
-#include "../threading/ThreadPool.h"
-#include "../utils/ThreadSafeQueue.h"
 #include "../index/index.h"
 #include "../Crawler/crawler.h"
+
+#include <cf/vec.h>
+#include <cf/searchstring.h>
+#include <cf/ThreadSafeQueue.h>
 
 #include <chrono>
 #include <fstream>
 #define timeNow() std::chrono::high_resolution_clock::now()
 #define duration(a) std::chrono::duration_cast<std::chrono::seconds>(a).count()
-typedef std::chrono::high_resolution_clock::time_point TimeVar;
+using TimeVar = std::chrono::high_resolution_clock::time_point;
 
-#include <atomic>
-
-#include <csignal>
 
 struct crawlerResults {
     ParsedUrl url;
@@ -89,9 +91,8 @@ class Node {
     std::atomic<bool> keepRunning;
 
     ThreadSafeFrontier frontier;
-    // IndexWriteHandler indexHandler;
-    ThreadSafeQueue<crawlerResults> crawlResultsQueue;
-    ThreadSafeQueue<std::shared_ptr<HtmlParser>> parseResultsQueue;
+    cf::ThreadSafeQueue<crawlerResults> crawlResultsQueue;
+    cf::ThreadSafeQueue<std::shared_ptr<HtmlParser>> parseResultsQueue;
 
     std::shared_ptr<UrlReceiver> urlReceiver = nullptr;  
 
