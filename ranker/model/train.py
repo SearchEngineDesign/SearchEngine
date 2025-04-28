@@ -5,6 +5,8 @@ from data_loader import RankingDataLoader
 import argparse
 import os
 import matplotlib.pyplot as plt
+import json
+from datetime import datetime
 
 def train_model(
    model: RankNet,
@@ -58,7 +60,7 @@ def train_model(
          
          optimizer.step()
          
-         print(f"Batch {i} loss: {batch_loss.item()}")
+         ## print(f"Batch {i} loss: {batch_loss.item()}")
          total_loss += batch_loss.item()
          num_queries += len(batch_queries)
          losses.append(batch_loss.item())
@@ -77,13 +79,15 @@ def plot_losses(losses, epoch):
 
 def evaluate_model(
    model: RankNet,
-   test_data: list
+   test_data: list,
+   output_dir: str = 'outputs'
 ):
    """
    Evaluate the model using NDCG@k and accuracy@k
    Args:
       model: The trained RankNet model
       test_data: List of tuples (doc_features, reference_ranks, doc_ids)
+      output_dir: Directory to save evaluation results
    Returns:
       Tuple of (average NDCG@k score, average accuracy@k, predictions)
       where predictions is a list of lists of doc_ids
@@ -92,9 +96,10 @@ def evaluate_model(
    total_accuracy = 0
    total_acc = 0
    predictions = []
+   evaluation_results = []
    
    with torch.no_grad():
-      for doc_features, reference_ranks, doc_ids in test_data:
+      for query_idx, (doc_features, reference_ranks, doc_ids) in enumerate(test_data):
          # Compute loss/NDCG
          loss = model.compute_ranking_loss(doc_features, reference_ranks)
          ndcg = 1 - loss.item()
@@ -120,16 +125,52 @@ def evaluate_model(
          acc = correct / model.k
          total_acc += acc
 
+         # Store evaluation results for this query
+         query_result = {
+            'query_id': query_idx,
+            'documents': []
+         }
+         
+         # Get ranks for all documents based on predicted scores
+         # First, get the sorted indices based on predicted scores (descending order)
+         sorted_indices = torch.argsort(scores, descending=True)
+         # Create a mapping from doc_id to predicted rank
+         doc_id_to_pred_rank = {doc_ids[i]: rank + 1 for rank, i in enumerate(sorted_indices)}
+         
+         # Get scores and ranks for all documents
+         for doc_id, rank in zip(doc_ids, reference_ranks):
+            query_result['documents'].append({
+               'doc_id': doc_id,
+               'true_rank': rank.item() if isinstance(rank, torch.Tensor) else rank,
+               'predicted_rank': doc_id_to_pred_rank[doc_id]
+            })
+         
+         evaluation_results.append(query_result)
+
    avg_ndcg = total_ndcg / len(test_data)
    avg_accuracy = total_accuracy / len(test_data)
    avg_acc = total_acc / len(test_data)
-   return avg_ndcg, avg_accuracy, avg_acc, predictions 
+   print(f"NDCG@{model.k} score: {avg_ndcg:.4f}")
+   print(f"Accuracy@{model.k} score: {avg_accuracy:.4f}")
+   print(f"Acc@{model.k} score: {avg_acc:.4f}")
+
+   # Save evaluation results to file
+   os.makedirs(output_dir, exist_ok=True)
+   timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+   output_file = os.path.join(output_dir, f'evaluation_results_{timestamp}.json')
+   
+   with open(output_file, 'w') as f:
+      json.dump(evaluation_results, f, indent=2)
+   
+   print(f"Evaluation results saved to {output_file}")
+   
+   return avg_ndcg, avg_accuracy, avg_acc, predictions
 
 def main():
    parser = argparse.ArgumentParser(description='Train and evaluate RankNet model')
-   parser.add_argument('--input_file', type=str, default='data/train.json', help='Path to input JSON file')
+   parser.add_argument('--input_file', type=str, default='data/data.json', help='Path to input JSON file')
    parser.add_argument('--output_dir', type=str, default='outputs', help='Directory to save outputs')
-   parser.add_argument('--num_epochs', type=int, default=3, help='Number of training epochs')
+   parser.add_argument('--num_epochs', type=int, default=5, help='Number of training epochs')
    parser.add_argument('--learning_rate', type=float, default=0.0001, help='Learning rate')
    parser.add_argument('--batch_size', type=int, default=32, help='Batch size')
    parser.add_argument('--k', type=int, default=10, help='Number of top documents to consider')
@@ -184,7 +225,7 @@ def main():
    )
    
    # Evaluate model
-   ndcg_score, accuracy, acc, predictions = evaluate_model(model, test_data)
+   ndcg_score, accuracy, acc, predictions = evaluate_model(model, test_data, args.output_dir)
    print(f"NDCG@{args.k} score: {ndcg_score:.4f}")
    print(f"Accuracy@{args.k} score: {accuracy:.4f}")
    print(f"Acc@{args.k} score: {acc:.4f}")

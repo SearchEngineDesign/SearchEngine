@@ -65,69 +65,27 @@ class RankNet(nn.Module):
       return scores.reshape(num_docs)
    
    def compute_ranking_loss(self, doc_features, reference_ranks):
+      """
+      Compute the ranking loss for a single query
+      Args:
+          doc_features: Tensor of shape (num_docs, num_features)
+          reference_ranks: List of reference ranks, where:
+                         - rank = -1 for documents not in top 10
+                         - rank = 1-10 for documents in top 10
+      Returns:
+          Loss value
+      """
+      # Get predictions
       scores = self.predict_scores(doc_features)
       
-      # Get valid indices (documents with rank >= 0)
-      valid_indices = [i for i, rank in enumerate(reference_ranks) if rank >= 0]
-      invalid_indices = [i for i, rank in enumerate(reference_ranks) if rank < 0]
+      # Calculate target scores based on ranks
+      target_scores = torch.zeros_like(scores)
+      for i, rank in enumerate(reference_ranks):
+         if rank == -1:
+            target_scores[i] = -1.0  # Target score for documents not in top 10
+         else:
+            target_scores[i] = 1.0 / rank  # Target score for documents in top 10
       
-      # Sort indices by their reference ranks
-      sorted_indices = sorted(valid_indices, key=lambda i: reference_ranks[i])
+      loss = F.mse_loss(scores, target_scores)
       
-      # Calculate pairwise ranking loss
-      ranking_loss = 0.0
-      num_pairs = 0
-      
-      # For each pair of documents where i should be ranked higher than j
-      for i in range(len(sorted_indices)):
-         for j in range(i + 1, len(sorted_indices)):
-            idx_i = sorted_indices[i]
-            idx_j = sorted_indices[j]
-            
-            rank_diff = reference_ranks[idx_j] - reference_ranks[idx_i]
-            
-            score_diff = scores[idx_i] - scores[idx_j]
-            desired_diff = rank_diff * 0.2  
-
-            pair_loss = torch.log(1 + torch.exp(-score_diff + desired_diff))
-            ranking_loss += pair_loss
-            num_pairs += 1
-      
-      # Average the ranking loss over all pairs
-      if num_pairs > 0:
-         ranking_loss = ranking_loss / num_pairs
-      
-      # Add penalty for valid documents to have positive scores
-      if len(valid_indices) > 0:
-         valid_scores = scores[valid_indices]
-         valid_loss = torch.mean(torch.relu(-valid_scores)) 
-      else:
-         valid_loss = torch.tensor(0.0, device=scores.device)
-      
-      # Add penalty for invalid documents to have negative scores
-      if len(invalid_indices) > 0:
-         invalid_scores = scores[invalid_indices]
-         invalid_loss = torch.mean(torch.relu(invalid_scores))  # Penalize scores > 0
-      else:
-         invalid_loss = torch.tensor(0.0, device=scores.device)
-      
-      if len(sorted_indices) > 0:
-         top_k_ref = sorted_indices[:self.k]
-         _, top_k_pred = torch.topk(scores, min(self.k, len(scores)))
-         
-         accuracy_loss = 0.0
-         for pred_idx in top_k_pred:
-            membership = torch.tensor(0.0, device=scores.device)
-            for ref_idx in top_k_ref:
-               if pred_idx == ref_idx:
-                  membership += 1.0
-            accuracy_loss -= membership
-         
-         accuracy_loss = accuracy_loss / self.k
-      else:
-         accuracy_loss = torch.tensor(0.0, device=scores.device)
-      
-
-      total_loss =  ranking_loss + 0.1 * valid_loss + 0.1 * invalid_loss + 0.5 * accuracy_loss
-      
-      return total_loss 
+      return loss 
